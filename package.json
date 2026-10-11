@@ -1,0 +1,66 @@
+{
+  "name": "delivery",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "npm run prisma:generate && ng build",
+    "build:frontend": "ng build",
+    "typecheck:backend": "tsc --noEmit --project backend/tsconfig.json",
+    "prisma:generate": "prisma generate --schema backend/prisma/schema.prisma",
+    "prisma:validate": "prisma validate --schema backend/prisma/schema.prisma",
+    "prisma:migrate:dev": "prisma migrate dev --schema backend/prisma/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema backend/prisma/schema.prisma",
+    "dev:netlify": "netlify dev",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
+    "@angular/platform-browser": "^20.3.0",
+    "@angular/router": "^20.3.0",
+    "@angular/service-worker": "^20.3.0",
+    "@netlify/functions": "^4.0.0",
+    "@prisma/adapter-pg": "6.19.0",
+    "@prisma/client": "6.19.0",
+    "pg": "^8.16.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^20.3.39",
+    "@angular/cli": "^20.3.39",
+    "@angular/compiler-cli": "^20.3.0",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.0",
+    "jasmine-core": "~5.9.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "netlify-cli": "^23.0.0",
+    "prisma": "6.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.2"
+  }
+}

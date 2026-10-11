@@ -1,0 +1,31 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StateSnapshot {
+  id        String   @id @default(cuid())
+  state     Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("state_snapshots")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  installId String   @map("install_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([installId])
+  @@map("push_subscriptions")
+}
