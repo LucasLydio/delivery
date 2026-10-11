@@ -1,0 +1,18 @@
+<section class="profile-page" aria-labelledby="profile-name">
+  <div class="profile-heading">
+    <div class="avatar" aria-hidden="true">{{ initials() }}<span>✓</span></div>
+    <h1 id="profile-name">{{ profile.profile().name }}</h1>
+    <p>{{ profile.profile().email }}</p>
+  </div>
+
+  <nav class="profile-menu" aria-label="Account settings">
+    <a routerLink="/profile/edit"><span class="menu-icon" aria-hidden="true">♙</span><span>Personal information</span><span aria-hidden="true">›</span></a>
+    <a routerLink="/orders"><span class="menu-icon" aria-hidden="true">▤</span><span>My orders</span><span aria-hidden="true">›</span></a>
+    <a routerLink="/addresses"><span class="menu-icon" aria-hidden="true">⌖</span><span>Addresses</span><span aria-hidden="true">›</span></a>
+    <a routerLink="/payments"><span class="menu-icon" aria-hidden="true">▱</span><span>Payment methods</span><span aria-hidden="true">›</span></a>
+    <a routerLink="/settings"><span class="menu-icon" aria-hidden="true">⚙</span><span>Settings</span><span aria-hidden="true">›</span></a>
+    <a routerLink="/support"><span class="menu-icon" aria-hidden="true">?</span><span>Help & support</span><span aria-hidden="true">›</span></a>
+  </nav>
+
+  <button class="logout-button" type="button"><span aria-hidden="true">↪</span> Log out</button>
+</section>

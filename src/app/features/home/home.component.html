@@ -1,78 +1,78 @@
-<header class="site-header">
-  <div class="container header-inner">
-    <a class="brand" href="/" [attr.aria-label]="config.config().brandName + ' home'">
-      <span class="brand-mark" aria-hidden="true">✳</span>
-      <span>{{ config.config().brandName }}</span>
-    </a>
-    <nav class="desktop-nav" aria-label="Main navigation">
-      <a href="#menu">Explore menu</a>
-      <a href="#about">Why us</a>
-    </nav>
-    <app-install-button />
+<section class="menu-page" aria-labelledby="menu-title">
+  <div class="menu-intro">
+    <p class="menu-kicker">GOOD FOOD, FAST</p>
+    <h1 id="menu-title">Hungry? <span>Order & eat.</span></h1>
+    <p class="menu-subtitle">Fresh favorites, ready when you are.</p>
   </div>
-</header>
 
-<main>
-  <section class="hero container" aria-labelledby="hero-heading">
-    <div class="hero-copy">
-      <span class="eyebrow"><span class="eyebrow-dot"></span> MADE FRESH, DELIVERED HAPPY</span>
-      <h1 id="hero-heading">Your next favorite meal is <em>closer than ever.</em></h1>
-      <p>{{ config.config().tagline }} Explore a menu made for the moments you want something really good.</p>
-      <div class="hero-actions">
-        <a class="button button--dark" href="#menu">Explore the menu <span aria-hidden="true">↗</span></a>
-        <span class="delivery-promise"><span aria-hidden="true">✦</span> Good food, good mood</span>
-      </div>
-    </div>
-    <div class="hero-art" aria-label="Illustration of a fresh meal">
-      <span class="hero-art__orbit hero-art__orbit--one"></span>
-      <span class="hero-art__orbit hero-art__orbit--two"></span>
-      <div class="hero-art__plate" aria-hidden="true">🥗</div>
-      <div class="hero-art__card hero-art__card--top"><span aria-hidden="true">⚡</span><span><strong>Made to order</strong><small>Fresh every time</small></span></div>
-      <div class="hero-art__card hero-art__card--bottom"><span aria-hidden="true">♥</span><span><strong>A little joy</strong><small>In every bite</small></span></div>
-    </div>
-  </section>
+  <div class="search-row">
+    <label class="menu-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg>
+      <span class="sr-only">Search menu</span>
+      <input type="search" placeholder="Search for food…" [ngModel]="query()" (ngModelChange)="query.set($event)">
+    </label>
+    <button class="filter-button" type="button" aria-label="Filter menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6" /></svg>
+    </button>
+  </div>
 
-  <section class="menu-section" id="menu" aria-labelledby="menu-heading">
-    <div class="container">
-      <div class="section-heading">
-        <div><span class="section-kicker">THE GOOD STUFF</span><h2 id="menu-heading">What sounds good today?</h2><p>Pick something lovely. Your favorites are right here.</p></div>
-        <label class="search-field"><span aria-hidden="true">⌕</span><span class="sr-only">Search menu</span><input type="search" placeholder="Search the menu" [ngModel]="query()" (ngModelChange)="query.set($event)"></label>
-      </div>
-      <div class="category-list" aria-label="Menu categories">
-        @for (option of categories(); track option) {
-          <button type="button" class="category-chip" [class.category-chip--active]="category() === option" [attr.aria-pressed]="category() === option" (click)="category.set(option)">{{ option }}</button>
-        }
-      </div>
-      <div class="menu-grid">
-        @if (!config.loaded()) {
-          <p class="empty-menu" role="status">Loading the menu…</p>
-        } @else {
-        @for (item of visibleMenu(); track item.id) {
-          <article class="food-card">
-            <div class="food-card__image" [style.background]="item.color"><span role="img" [attr.aria-label]="item.name">{{ item.emoji }}</span>@if (item.tag) { <span class="food-card__tag">{{ item.tag }}</span> }</div>
-            <div class="food-card__body"><div class="food-card__category">{{ item.category }}</div><h3>{{ item.name }}</h3><p>{{ item.description }}</p><div class="food-card__footer"><strong>{{ formatPrice(item.price) }}</strong><button type="button" class="add-button" [attr.aria-label]="'Add ' + item.name + ' to basket'" (click)="add(item)">+</button></div></div>
-          </article>
-        } @empty {
-          <p class="empty-menu">No meals match your search. Try another word or category.</p>
-        }
-        }
-      </div>
-      @if (cartCount() > 0) {
-        <div class="cart-summary" role="status"><span><strong>{{ cartCount() }} {{ cartCount() === 1 ? 'item' : 'items' }} added</strong><small>Checkout is coming soon</small></span><strong>{{ formatPrice(cartTotal()) }}</strong></div>
+  <div class="category-list" aria-label="Menu categories">
+    @for (option of categories(); track option) {
+      <button type="button" class="category" [class.category--active]="category() === option" [attr.aria-pressed]="category() === option" (click)="category.set(option)">
+        <span class="category__icon" aria-hidden="true">{{ option === 'All' ? '✦' : option === 'Bowls' ? '🥢' : option === 'Pizza' ? '◒' : '≋' }}</span>
+        <span>{{ option }}</span>
+      </button>
+    }
+  </div>
+
+  <article class="featured-card">
+    <div class="featured-card__copy">
+      <span>HITS OF THE WEEK</span>
+      <h2>Colorful food for brighter days.</h2>
+      <a routerLink="/product/pizza">Explore favorites <span aria-hidden="true">→</span></a>
+    </div>
+    @if (config.config().menu[1]; as featured) {
+      <div class="featured-card__dish"><app-dish-image [item]="featured" /></div>
+    }
+  </article>
+
+  <div class="section-title">
+    <div><p>OUR MENU</p><h2>Popular near you</h2></div>
+    <span>{{ visibleMenu().length }} dishes</span>
+  </div>
+
+  @if (!config.loaded()) {
+    <p class="menu-state" role="status">Loading the menu…</p>
+  } @else {
+    <div class="product-grid">
+      @for (item of visibleMenu(); track item.id) {
+        <article class="product-card">
+          <a class="product-card__image" [routerLink]="['/product', item.id]" [style.background]="item.color" [attr.aria-label]="'View ' + item.name">
+            <app-dish-image [item]="item" />
+            @if (item.tag) { <span class="product-card__tag">{{ item.tag }}</span> }
+          </a>
+          <div class="product-card__body">
+            <a [routerLink]="['/product', item.id]"><h3>{{ item.name }}</h3></a>
+            <p>{{ item.description }}</p>
+            <div class="product-card__footer">
+              <strong>{{ formatPrice(item.price) }}</strong>
+              <button type="button" class="add-button" [attr.aria-label]="'Add ' + item.name + ' to cart'" (click)="add(item)">
+                @if (cart.quantity(item.id) > 0) { <span>{{ cart.quantity(item.id) }}</span> } @else { <span aria-hidden="true">+</span> }
+              </button>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <p class="menu-state">No dishes match your search. Try another word or category.</p>
       }
     </div>
-  </section>
+  }
 
-  <section class="about-section container" id="about" aria-labelledby="about-heading">
-    <div class="about-copy"><span class="section-kicker">MADE FOR THE EVERYDAY</span><h2 id="about-heading">Take your favorites wherever you go.</h2><p>Install the app for a full-screen experience. When you come back, it checks for the latest updates automatically.</p></div>
-    <div class="status-card"><div class="status-card__icon" aria-hidden="true">⌁</div><div><strong>Stay in the loop</strong><p class="connection-status"><span class="status-dot" [class.status-dot--live]="realtime.connection() === 'live'"></span>{{ connectionLabel() }}</p>@if (realtime.error()) { <small role="status">{{ realtime.error() }}</small> }</div>
-      @if (push.status() === 'ready') { <button type="button" class="button button--outline" (click)="push.enable()">Enable notifications</button> }
-      @if (push.status() === 'enabled') { <button type="button" class="text-button" (click)="push.disable()">Turn off notifications</button> }
-      @if (push.status() === 'error') { <button type="button" class="button button--outline" (click)="push.initialize()">Retry notification setup</button> }
-      @if (push.status() === 'denied') { <small>Notifications are blocked in device settings.</small> }
-      @if (push.message()) { <small role="status">{{ push.message() }}</small> }
-    </div>
-  </section>
-</main>
-
-<footer class="site-footer"><div class="container footer-inner"><span class="brand"><span class="brand-mark" aria-hidden="true">✳</span>{{ config.config().brandName }}</span><span>Made for good days, one meal at a time.</span></div></footer>
+  @if (cart.count() > 0) {
+    <a class="cart-peek" routerLink="/cart" aria-label="Open cart">
+      <span class="cart-peek__count">{{ cart.count() }}</span>
+      <span><strong>View cart</strong><small>Your order is waiting</small></span>
+      <strong>{{ formatPrice(cart.subtotal()) }}</strong>
+    </a>
+  }
+</section>

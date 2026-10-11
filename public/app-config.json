@@ -6,9 +6,9 @@
   "locale": "en-US",
   "realtimeUrl": null,
   "menu": [
-    { "id": "poke", "name": "Chicken poke bowl", "description": "Brown rice, tender chicken, avocado and bright greens.", "price": 12.5, "category": "Bowls", "emoji": "🥗", "color": "#eaf1df", "tag": "Bestseller" },
-    { "id": "pizza", "name": "Garden pizza", "description": "Crisp crust, creamy mozzarella and market vegetables.", "price": 14.0, "category": "Pizza", "emoji": "🍕", "color": "#f9e5d7", "tag": "Popular" },
-    { "id": "burger", "name": "The good burger", "description": "Juicy patty, fresh lettuce and our house sauce.", "price": 11.8, "category": "Burgers", "emoji": "🍔", "color": "#f8edce" },
-    { "id": "noodles", "name": "Spicy sesame noodles", "description": "Warm noodles, sesame crunch and a gentle kick.", "price": 10.4, "category": "Bowls", "emoji": "🍜", "color": "#f5e3d6" }
+    { "id": "poke", "name": "Chicken poke bowl", "description": "Brown rice, tender chicken, avocado and bright greens.", "price": 12.5, "category": "Bowls", "emoji": "🥗", "color": "#eaf1df", "tag": "Bestseller", "imagePosition": "0% 0%" },
+    { "id": "pizza", "name": "Garden pizza", "description": "Crisp crust, creamy mozzarella and market vegetables.", "price": 14.0, "category": "Pizza", "emoji": "🍕", "color": "#f9e5d7", "tag": "Popular", "imagePosition": "100% 0%" },
+    { "id": "burger", "name": "The good burger", "description": "Juicy patty, fresh lettuce and our house sauce.", "price": 11.8, "category": "Burgers", "emoji": "🍔", "color": "#f8edce", "imagePosition": "0% 100%" },
+    { "id": "noodles", "name": "Spicy sesame noodles", "description": "Warm noodles, sesame crunch and a gentle kick.", "price": 10.4, "category": "Bowls", "emoji": "🍜", "color": "#f5e3d6", "imagePosition": "100% 100%" }
   ]
 }

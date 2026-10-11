@@ -19,8 +19,8 @@
   --shadow-lg: 0 18px 42px rgb(0 0 0 / .3); --shadow-xlg: 0 30px 65px rgb(0 0 0 / .35);
 }
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg-lighter); color: var(--color-dark); font: 400 var(--font-md)/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+html { max-width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+body { max-width: 100%; margin: 0; overflow-x: hidden; background: var(--bg-lighter); color: var(--color-dark); font: 400 var(--font-md)/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 button, input { font: inherit; }
 button { cursor: pointer; border: 0; }
 a { color: inherit; text-decoration: none; }

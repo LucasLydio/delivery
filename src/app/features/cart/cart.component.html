@@ -1,0 +1,42 @@
+<section class="checkout-page" aria-labelledby="checkout-title">
+  <div class="checkout-heading">
+    <a class="back-link" routerLink="/" aria-label="Back to menu">←</a>
+    <div><p>DELIVERY IN 24–35 MIN</p><h1 id="checkout-title">Your order</h1></div>
+    @if (cart.count() > 0) { <button type="button" class="clear-button" (click)="cart.clear()">Clear</button> }
+  </div>
+
+  @if (cart.lines().length > 0) {
+    <section class="checkout-card" aria-labelledby="items-title">
+      <h2 id="items-title">Items</h2>
+      @for (line of cart.lines(); track line.item.id) {
+        <article class="cart-line">
+          <div class="cart-line__image" [style.background]="line.item.color"><app-dish-image [item]="line.item" /></div>
+          <div class="cart-line__copy"><strong>{{ line.item.name }}</strong><small>{{ line.item.category }}</small><button type="button" (click)="cart.remove(line.item.id)">Remove</button></div>
+          <div class="line-price"><strong>{{ formatPrice(line.total) }}</strong><div class="stepper"><button type="button" [attr.aria-label]="'Remove one ' + line.item.name" (click)="cart.decrement(line.item.id)">−</button><span>{{ line.quantity }}</span><button type="button" [attr.aria-label]="'Add one ' + line.item.name" (click)="cart.add(line.item.id)">+</button></div></div>
+        </article>
+      }
+      <div class="cart-line cutlery-line"><span class="cutlery-icon" aria-hidden="true">♜</span><div class="cart-line__copy"><strong>Cutlery</strong><small>Only add what you need</small></div><div class="stepper"><button type="button" aria-label="Remove cutlery" (click)="removeCutlery()">−</button><span>{{ cutlery() }}</span><button type="button" aria-label="Add cutlery" (click)="addCutlery()">+</button></div></div>
+    </section>
+
+    <section class="checkout-card address-card" aria-labelledby="address-title">
+      <div><span class="section-icon" aria-hidden="true">⌖</span><div><h2 id="address-title">Delivery address</h2><p>{{ profile.profile().address }}</p></div></div>
+      <a routerLink="/profile/edit">Change</a>
+    </section>
+
+    <section class="checkout-card payment-card" aria-labelledby="payment-title">
+      <h2 id="payment-title">Payment method</h2>
+      <button type="button"><span class="payment-mark" aria-hidden="true">●</span><span><strong>Pay on delivery</strong><small>Card or cash at your door</small></span><span aria-hidden="true">›</span></button>
+    </section>
+
+    <section class="totals" aria-label="Order total">
+      <div><span>Subtotal</span><strong>{{ formatPrice(cart.subtotal()) }}</strong></div>
+      <div><span>Delivery</span><strong class="free">Free</strong></div>
+      <div class="grand-total"><span>Total</span><strong>{{ formatPrice(cart.subtotal()) }}</strong></div>
+    </section>
+
+    <button class="checkout-button" type="button" (click)="checkout()"><span>Place order</span><span>24–35 min · {{ formatPrice(cart.subtotal()) }}</span></button>
+    @if (checkoutMessage()) { <p class="checkout-message" role="status">{{ checkoutMessage() }}</p> }
+  } @else {
+    <div class="empty-cart"><span aria-hidden="true">◒</span><h2>Your cart is feeling light</h2><p>Add something delicious from the menu and it will appear here.</p><a class="button button--dark" routerLink="/">Explore the menu</a></div>
+  }
+</section>

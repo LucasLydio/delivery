@@ -1,0 +1,44 @@
+:host { display: block; }
+.checkout-page { width: min(100% - 2rem, 46rem); margin-inline: auto; padding: 1.5rem 0 3rem; }
+.checkout-heading { display: grid; grid-template-columns: 2.6rem 1fr auto; align-items: center; gap: .8rem; margin-bottom: 1.4rem; }
+.back-link { display: grid; width: 2.6rem; height: 2.6rem; place-items: center; border-radius: 50%; background: var(--bg-light); font-size: 1.2rem; }
+.checkout-heading p { margin: 0; color: var(--brand-dark); font-size: .6rem; font-weight: 850; letter-spacing: .11em; }
+.checkout-heading h1 { margin: .1rem 0 0; font-size: 1.8rem; letter-spacing: -.05em; }
+.clear-button { background: transparent; color: var(--color-light); font-size: .7rem; text-decoration: underline; }
+.checkout-card { margin-bottom: .8rem; padding: 1rem; border: 1px solid var(--border-lighter); border-radius: 1.25rem; background: var(--bg-lighter); box-shadow: var(--shadow-sm); }
+.checkout-card > h2, .address-card h2 { margin: 0; font-size: .82rem; }
+.checkout-card > h2 { margin-bottom: .6rem; }
+.cart-line { display: grid; grid-template-columns: 4.1rem 1fr auto; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border-lighter); }
+.cart-line:last-child { border-bottom: 0; }
+.cart-line__image { width: 4.1rem; height: 4.1rem; overflow: hidden; border-radius: .9rem; }
+.cart-line__copy { display: grid; min-width: 0; }
+.cart-line__copy strong { overflow: hidden; font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }
+.cart-line__copy small { color: var(--color-light); font-size: .62rem; }
+.cart-line__copy button { justify-self: start; margin-top: .25rem; padding: 0; background: transparent; color: var(--brand-dark); font-size: .58rem; }
+.line-price { display: grid; justify-items: end; gap: .45rem; }
+.line-price > strong { font-size: .72rem; }
+.stepper { display: flex; align-items: center; gap: .4rem; }
+.stepper button { display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border-radius: 50%; background: var(--bg-light); color: var(--color-dark); }
+.stepper span { min-width: .8rem; font-size: .7rem; text-align: center; }
+.cutlery-line { grid-template-columns: 4.1rem 1fr auto; }
+.cutlery-icon, .section-icon { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: .75rem; background: var(--bg-light); }
+.address-card { display: flex; align-items: center; justify-content: space-between; }
+.address-card > div { display: flex; align-items: center; gap: .8rem; }
+.address-card p { margin: .15rem 0 0; color: var(--color-light); font-size: .65rem; }
+.address-card > a { color: var(--brand-dark); font-size: .65rem; font-weight: 800; }
+.payment-card button { display: grid; grid-template-columns: auto 1fr auto; width: 100%; align-items: center; gap: .75rem; padding: .55rem 0 0; background: transparent; color: var(--color-dark); text-align: left; }
+.payment-card button > span:nth-child(2) { display: grid; }
+.payment-card strong { font-size: .75rem; }
+.payment-card small { color: var(--color-light); font-size: .62rem; }
+.payment-mark { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: .75rem; background: var(--color-dark); color: white; }
+.totals { padding: 1rem .2rem; }
+.totals > div { display: flex; justify-content: space-between; padding: .35rem 0; color: var(--color-light); font-size: .75rem; }
+.totals strong { color: var(--color-dark); }
+.totals .free { color: #348451; }
+.totals .grand-total { margin-top: .4rem; padding-top: .8rem; border-top: 1px solid var(--border-light); color: var(--color-dark); font-size: .95rem; }
+.checkout-button { display: flex; width: 100%; min-height: 3.5rem; align-items: center; justify-content: space-between; padding: 0 1.25rem; border-radius: 1rem; background: var(--color-dark); color: white; font-size: .75rem; font-weight: 800; }
+.checkout-message { margin: .75rem 0 0; padding: .8rem; border-radius: .8rem; background: var(--brand-lighter); color: var(--brand-dark); font-size: .7rem; }
+.empty-cart { display: grid; min-height: 58dvh; place-items: center; align-content: center; text-align: center; }
+.empty-cart > span { display: grid; width: 4rem; height: 4rem; place-items: center; border-radius: 1.25rem; background: var(--brand-lighter); font-size: 2rem; }
+.empty-cart h2 { margin: 1rem 0 .35rem; font-size: 1.5rem; }
+.empty-cart p { max-width: 20rem; margin: 0 0 1.4rem; color: var(--color-light); font-size: .8rem; }

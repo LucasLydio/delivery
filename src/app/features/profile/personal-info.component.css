@@ -1,0 +1,23 @@
+:host { display: block; }
+.info-page { width: min(100% - 2rem, 42rem); margin-inline: auto; padding: 1.25rem 0 3rem; }
+.info-header { display: grid; grid-template-columns: 2.6rem 1fr 2.6rem; align-items: center; text-align: center; }
+.info-header a { display: grid; width: 2.6rem; height: 2.6rem; place-items: center; border-radius: 50%; background: var(--bg-light); font-size: 1.2rem; }
+.info-header h1 { margin: 0; font-size: 1rem; }
+.avatar-editor { display: grid; justify-items: center; padding: 2rem 0; }
+.avatar { position: relative; display: grid; width: 5rem; height: 5rem; place-items: center; border: .35rem solid var(--brand-lighter); border-radius: 50%; background: linear-gradient(145deg, var(--brand-light), var(--brand-medium)); color: white; font-size: 1.25rem; font-weight: 850; }
+.avatar span { position: absolute; right: -.05rem; bottom: 0; display: grid; width: 1.4rem; height: 1.4rem; place-items: center; border: 3px solid var(--bg-lighter); border-radius: 50%; background: var(--brand-medium); font-size: .55rem; }
+.avatar-editor button { margin-top: .6rem; background: transparent; color: var(--color-dark); font-size: .68rem; }
+form { display: grid; gap: 1rem; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+label { display: grid; gap: .4rem; min-width: 0; }
+label > span { font-size: .65rem; font-weight: 750; }
+input, textarea { width: 100%; border: 1px solid var(--border-light); border-radius: .8rem; background: var(--bg-light); color: var(--color-dark); font: inherit; font-size: .78rem; }
+input { min-height: 3rem; padding: 0 .85rem; }
+textarea { padding: .85rem; resize: vertical; }
+label > small { justify-self: end; color: var(--color-light); font-size: .58rem; }
+input[aria-invalid="true"] { border-color: #b23a32; }
+.field-error { margin-top: -.7rem; color: #a23d35; font-size: .62rem; }
+.save-button { min-height: 3.3rem; margin-top: .5rem; border-radius: 1rem; background: var(--color-dark); color: white; font-size: .78rem; font-weight: 800; }
+.save-button:disabled { cursor: not-allowed; opacity: .45; }
+.saved-message { margin: 0; padding: .75rem; border-radius: .8rem; background: #e8f5eb; color: #2d6f40; font-size: .7rem; text-align: center; }
+@media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }

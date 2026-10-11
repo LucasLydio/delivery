@@ -16,6 +16,9 @@ BACKEND.md
 .env.*
 !.env.example
 .netlify/
+.edge-preview*/
+.edge-dom/
+menu-preview*.png
 npm-debug.log
 yarn-error.log
 

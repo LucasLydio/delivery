@@ -9,6 +9,7 @@ export interface MenuItem {
   emoji: string;
   color: string;
   tag?: string;
+  imagePosition?: string;
 }
 
 export interface PublicAppConfig {

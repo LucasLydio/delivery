@@ -27,6 +27,16 @@ Edit `public/app-config.json` to change the brand name, accent, currency, locale
 
 Menu items are illustrative local data. The basket is a UI preview and deliberately has no checkout action.
 
+## UI routes
+
+- `/` — mobile menu, search, categories, featured dish, and shared cart state.
+- `/product/:id` — food details, options, quantity, and add to cart.
+- `/cart` — editable order summary, address, payment preview, and checkout handoff.
+- `/profile` — customer account menu.
+- `/profile/edit` — validated personal information form saved on this device.
+
+The generated transparent food sheet is `public/images/menu-dishes.png`. Product quadrant positions live in `public/app-config.json`, so replacement brands can supply another four-item sheet or replace the image component with catalog URLs later.
+
 ## Realtime and notifications
 
 The app fetches `/api/state/latest` on launch, when it becomes visible again, and after a WebSocket reconnect or `state_changed` event. With `realtimeUrl` configured, it reconnects with bounded exponential backoff, sends an **application-level** `ping` every 60 seconds while visible, and expects `pong` within 15 seconds. It closes the socket when hidden. Browser JavaScript cannot send WebSocket protocol ping frames, so the external gateway must implement this message contract. Netlify Functions cannot host persistent WebSocket connections. Without a gateway URL, the app still performs HTTP catch-up.

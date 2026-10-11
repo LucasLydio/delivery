@@ -1,0 +1,43 @@
+@if (item(); as product) {
+  <article class="detail-page">
+    <div class="detail-visual" [style.background]="product.color">
+      <a class="back-button" routerLink="/" aria-label="Back to menu">←</a>
+      <button class="favorite-button" type="button" aria-label="Save to favorites">♡</button>
+      <div class="detail-dish"><app-dish-image [item]="product" /></div>
+    </div>
+
+    <div class="detail-content">
+      <div class="detail-heading">
+        <div><span>{{ product.category }}</span><h1>{{ product.name }}</h1></div>
+        <strong>{{ formatPrice(product.price) }}</strong>
+      </div>
+      <p class="description">{{ product.description }} Prepared fresh when you order, with bright seasonal ingredients and our signature house dressing.</p>
+
+      <dl class="nutrition" aria-label="Nutrition summary">
+        <div><dt>325</dt><dd>kcal</dd></div><div><dt>24g</dt><dd>protein</dd></div><div><dt>18g</dt><dd>carbs</dd></div><div><dt>12g</dt><dd>fats</dd></div>
+      </dl>
+
+      <section class="option-section" aria-labelledby="option-title">
+        <div><h2 id="option-title">Make it yours</h2><span>Optional</span></div>
+        <label><span><strong>Add extra greens</strong><small>Fresh seasonal leaves</small></span><input type="checkbox"></label>
+        <label><span><strong>Make it spicy</strong><small>Add our chili crisp</small></span><input type="checkbox"></label>
+      </section>
+
+      <div class="detail-actions">
+        <div class="quantity-control" aria-label="Quantity">
+          <button type="button" aria-label="Decrease quantity" (click)="decrement()">−</button>
+          <strong aria-live="polite">{{ quantity() }}</strong>
+          <button type="button" aria-label="Increase quantity" (click)="increment()">+</button>
+        </div>
+        <button class="add-cart-button" type="button" (click)="addToCart()">
+          <span>{{ added() ? 'Added to cart' : 'Add to cart' }}</span><strong>{{ formatPrice(total()) }}</strong>
+        </button>
+      </div>
+      @if (added()) { <a class="view-cart-link" routerLink="/cart">View your cart →</a> }
+    </div>
+  </article>
+} @else if (config.loaded()) {
+  <section class="missing-product"><h1>Dish not found</h1><a class="button button--dark" routerLink="/">Back to menu</a></section>
+} @else {
+  <p class="loading-state" role="status">Loading dish…</p>
+}
