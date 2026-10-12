@@ -73,6 +73,11 @@ export interface CartDraft {
   items: CartItemInput[];
 }
 
+export interface CartSyncInput {
+  revision: string | null;
+  items: CartItemInput[];
+}
+
 export interface CartPreviewLine {
   itemId: string;
   productId: string;
@@ -113,6 +118,12 @@ export interface Customer {
   phone: string | null;
 }
 
+export interface CustomerSession {
+  customer: Customer;
+  accessToken: string;
+  accessTokenExpiresAt: string;
+}
+
 export interface Address {
   id: string;
   customerId: string;
@@ -124,6 +135,11 @@ export interface Address {
   postalCode: string;
   countryCode: string;
   deliveryInstructions: string | null;
+  locationPin: {
+    latitude: number;
+    longitude: number;
+    accuracyMeters?: number;
+  } | null;
   isDefault: boolean;
 }
 
@@ -138,4 +154,39 @@ export interface OrderDraft {
   subtotalMinor: MinorAmount;
   createdAt: string;
   updatedAt: string;
+}
+
+export type CheckoutPaymentMethod =
+  | 'MERCADO_PAGO_PIX'
+  | 'MERCADO_PAGO_CARD'
+  | 'PAY_ON_DELIVERY'
+  | 'PAY_AT_STORE';
+
+export interface CheckoutQuote extends CartQuote {
+  paymentMethod: CheckoutPaymentMethod;
+  paymentFeeMinor: MinorAmount;
+  discountPercent: number;
+  discountMinor: MinorAmount;
+  distanceMeters: number | null;
+  couponCode: string | null;
+}
+
+export interface OrderSummary extends CheckoutQuote {
+  id: string;
+  status: 'PAYMENT_PENDING' | 'CONFIRMED' | 'PAYMENT_FAILED' | 'CANCELLED';
+  paymentStatus: 'PENDING' | 'PAID' | 'ON_DELIVERY' | 'AT_STORE' | 'FAILED' | 'CANCELLED';
+  mercadoPagoStatus: string | null;
+  mercadoPagoOrderId: string | null;
+  paymentData: Record<string, unknown> | null;
+  createdAt: string;
+  confirmedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface OrderNotification {
+  id: string;
+  orderId: string;
+  type: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
 }

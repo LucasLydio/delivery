@@ -1,11 +1,35 @@
 import { z } from "zod";
 
-const optionalUrl = z.string().url().optional();
+const emptyAsUndefined = (value: unknown) => value === "" ? undefined : value;
+const optionalUrl = z.preprocess(emptyAsUndefined, z.url().optional());
 
 const runtimeSchema = z.object({
   DATABASE_URL: optionalUrl,
+  REDIS_URL: optionalUrl,
+  CACHE_NAMESPACE: z.string().regex(/^[a-zA-Z0-9:_-]+$/).default("delivery"),
+  CATALOG_CURRENCY: z.string().regex(/^[A-Z]{3}$/).default("BRL"),
+  PRODUCT_IMAGE_BASE_URL: z.string().min(1).default("/images/products/"),
   CORS_ORIGIN: z.string().optional(),
-  VAPID_PUBLIC_KEY: z.string().min(1).optional(),
+  VAPID_PUBLIC_KEY: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  AUTH_TOKEN_SECRET: z.preprocess(emptyAsUndefined, z.string().min(32).optional()),
+  AUTH_TOKEN_ISSUER: z.string().min(1).default("delivery-api"),
+  AUTH_TOKEN_AUDIENCE: z.string().min(1).default("delivery-pwa"),
+  AUTH_ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+  AUTH_REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  AUTH_REFRESH_COOKIE_NAME: z.string().regex(/^[A-Za-z0-9_-]+$/).default("delivery_refresh"),
+  CART_DELIVERY_FEE_MINOR: z.coerce.number().int().min(0).max(10_000_000).default(0),
+  CART_QUOTE_TTL_SECONDS: z.coerce.number().int().min(60).max(1800).default(300),
+  LIMIT_KM: z.string().regex(/^\d+(?:\.\d{1,3})?$/).default("0"),
+  FEE_PER_KM: z.string().regex(/^\d+(?:\.\d{1,2})?$/).default("0.00"),
+  MERCADO_PAGO_FEE_PERCENT: z.string().regex(/^\d+(?:\.\d{1,4})?$/).default("0"),
+  SHOP_LATITUDE: z.preprocess(emptyAsUndefined, z.coerce.number().min(-90).max(90).optional()),
+  SHOP_LONGITUDE: z.preprocess(emptyAsUndefined, z.coerce.number().min(-180).max(180).optional()),
+  MERCADO_PAGO_ACCESS_TOKEN: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  MERCADO_PAGO_PUBLIC_KEY: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  MERCADO_PAGO_WEBHOOK_SECRET: z.preprocess(emptyAsUndefined, z.string().min(16).optional()),
+  MERCADO_PAGO_API_URL: z.url().default("https://api.mercadopago.com"),
+  CHECKOUT_LOCK_TTL_MS: z.coerce.number().int().min(5_000).max(60_000).default(15_000),
+  UNPAID_ORDER_TIMEOUT_MINUTES: z.coerce.number().int().min(1).max(60).default(5),
 });
 
 export function getRuntimeConfig() {

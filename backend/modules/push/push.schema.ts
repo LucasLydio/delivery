@@ -17,3 +17,6 @@ export const deletePushSchema = z.object({
   installId: z.string().uuid(),
   endpoint: z.string().url().refine((value) => value.startsWith("https://"), "Endpoint must use HTTPS").max(2048),
 }).strict();
+
+export type PushRegistration = z.infer<typeof registerPushSchema>;
+export type PushDeletion = z.infer<typeof deletePushSchema>;

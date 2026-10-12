@@ -5,6 +5,7 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["express"]
 
 [dev]
   command = "npm run start"
@@ -12,9 +13,16 @@
   port = 8888
 
 [[redirects]]
+  from = "/api/order-events"
+  to = "/.netlify/functions/order-events"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

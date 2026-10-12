@@ -20,7 +20,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
   styles: [`
     .placeholder-page { display: grid; min-height: 65dvh; place-items: center; align-content: center; padding: 3rem 1.5rem; text-align: center; }
     .placeholder-icon { display: grid; width: 4rem; height: 4rem; place-items: center; border-radius: 1.25rem; background: var(--brand-lighter); font-size: 2rem; }
-    .placeholder-image { display: block; width: min(100%, 20rem); height: auto; margin: .25rem 0; object-fit: contain; }
+    .placeholder-image { display: block; width: min(100%, 20rem); height: auto; margin: .25rem 0; object-fit: contain; opacity: 0.9; }
     h1 { margin: 0; font-size: clamp(2rem, 8vw, 3.3rem); letter-spacing: -.06em; }
     p { max-width: 28rem; margin: .75rem 0 1.5rem; color: var(--color-light); }
   `],

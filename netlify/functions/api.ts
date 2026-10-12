@@ -1,5 +1,5 @@
-import type { Context } from "@netlify/functions";
-import { handleApi } from "../../backend/app";
+import serverless from "serverless-http";
+import { app } from "../../backend/app";
 
-export default async (request: Request, _context: Context): Promise<Response> => handleApi(request);
+export const handler = serverless(app);
 

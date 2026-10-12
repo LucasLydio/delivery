@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run prisma:generate && ng build",
+    "build": "npm run prisma:generate && npm run typecheck:backend && ng build",
     "build:frontend": "ng build",
     "typecheck:backend": "tsc --noEmit --project backend/tsconfig.json",
     "prisma:generate": "prisma generate --schema backend/prisma/schema.prisma",
@@ -13,7 +13,9 @@
     "prisma:migrate:deploy": "prisma migrate deploy --schema backend/prisma/schema.prisma",
     "dev:netlify": "netlify dev",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:backend": "tsx --test \"backend/**/*.spec.ts\"",
+    "test:backend:db": "tsx --test \"backend/**/*.db.test.ts\""
   },
   "prettier": {
     "printWidth": 100,
@@ -39,19 +41,25 @@
     "@netlify/functions": "^4.0.0",
     "@prisma/adapter-pg": "6.19.0",
     "@prisma/client": "6.19.0",
+    "express": "^5.3.0",
+    "jose": "^6.1.0",
     "pg": "^8.16.0",
+    "redis": "^5.12.1",
     "rxjs": "~7.8.0",
+    "serverless-http": "^4.0.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.15.0",
-    "zod": "^4.0.0"
+    "zod": "^4.0.0",
+    "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@angular/build": "^20.3.39",
     "@angular/cli": "^20.3.39",
     "@angular/compiler-cli": "^20.3.0",
+    "@types/express": "^5.0.6",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^22.15.0",
     "@types/pg": "^8.15.0",
+    "@types/supertest": "^6.0.3",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -60,6 +68,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "netlify-cli": "^23.0.0",
     "prisma": "6.19.0",
+    "supertest": "^7.3.1",
     "tsx": "^4.20.0",
     "typescript": "~5.9.2"
   }
