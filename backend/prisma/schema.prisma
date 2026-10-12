@@ -29,3 +29,237 @@ model PushSubscription {
   @@index([installId])
   @@map("push_subscriptions")
 }
+
+// One brand is deployed with one database. Product labels are localized content;
+// slugs and IDs remain stable across text changes.
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  sortOrder Int       @default(0) @map("sort_order")
+  products  Product[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+// Catalog writes must increment this singleton in the same transaction so the
+// API can use its version as the ETag for cached product data.
+model CatalogRevision {
+  id        String   @id
+  version   Int      @default(1)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("catalog_revision")
+}
+
+model Product {
+  id             String               @id @default(cuid())
+  slug           String               @unique
+  name           String
+  description    String
+  categoryId     String               @map("category_id")
+  category       Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  basePriceMinor Int                  @map("base_price_minor")
+  currency       String               @db.VarChar(3)
+  available      Boolean              @default(true)
+  sortOrder      Int                  @default(0) @map("sort_order")
+  images         ProductImage[]
+  optionGroups   ProductOptionGroup[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  @@index([categoryId, available, sortOrder])
+  @@map("products")
+}
+
+// The object key is durable; the local-folder or Supabase URL is derived at read time.
+model ProductImage {
+  id         String   @id @default(cuid())
+  productId  String   @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  storageKey String   @unique @map("storage_key")
+  alt        String
+  mimeType   String   @map("mime_type") @db.VarChar(64)
+  width      Int?
+  height     Int?
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([productId, sortOrder])
+  @@map("product_images")
+}
+
+model ProductOptionGroup {
+  id            String          @id @default(cuid())
+  productId     String          @map("product_id")
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name          String
+  minSelections Int             @default(0) @map("min_selections")
+  maxSelections Int             @default(1) @map("max_selections")
+  sortOrder     Int             @default(0) @map("sort_order")
+  options       ProductOption[]
+
+  @@index([productId, sortOrder])
+  @@map("product_option_groups")
+}
+
+model ProductOption {
+  id               String             @id @default(cuid())
+  groupId          String             @map("group_id")
+  group            ProductOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name             String
+  priceDeltaMinor  Int                @default(0) @map("price_delta_minor")
+  available        Boolean            @default(true)
+  sortOrder        Int                @default(0) @map("sort_order")
+  cartSelections   CartItemOption[]
+  orderSelections  OrderItemOption[]
+
+  @@index([groupId, sortOrder])
+  @@map("product_options")
+}
+
+// Authentication is a later decision. authSubject can identify an external user;
+// guest carts can exist without a Customer row.
+model Customer {
+  id          String    @id @default(cuid())
+  authSubject String?   @unique @map("auth_subject")
+  name        String
+  email       String?
+  phone       String?
+  addresses   Address[]
+  cart        Cart?
+  orders      Order[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Address {
+  id                   String   @id @default(cuid())
+  customerId           String   @map("customer_id")
+  customer             Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label                String
+  line1                String
+  line2                String?
+  city                 String
+  region               String?
+  postalCode           String   @map("postal_code")
+  countryCode          String   @map("country_code") @db.VarChar(2)
+  deliveryInstructions String?  @map("delivery_instructions")
+  isDefault            Boolean  @default(false) @map("is_default")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@index([customerId])
+  @@map("addresses")
+}
+
+// A cart belongs to either one customer or one signed guest token. The migration
+// enforces that exactly one identity is present.
+model Cart {
+  id             String     @id @default(cuid())
+  customerId     String?    @unique @map("customer_id")
+  customer       Customer?  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  guestTokenHash String?    @unique @map("guest_token_hash")
+  revision       Int        @default(1)
+  currency       String     @db.VarChar(3)
+  items          CartItem[]
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@map("carts")
+}
+
+model CartItem {
+  id              String           @id @default(cuid())
+  cartId          String           @map("cart_id")
+  cart            Cart             @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId       String           @map("product_id")
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity        Int
+  selectedOptions CartItemOption[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model CartItemOption {
+  cartItemId String        @map("cart_item_id")
+  cartItem   CartItem      @relation(fields: [cartItemId], references: [id], onDelete: Cascade)
+  optionId   String        @map("option_id")
+  option     ProductOption @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@id([cartItemId, optionId])
+  @@index([optionId])
+  @@map("cart_item_options")
+}
+
+// Only a draft state exists until checkout placement and payment are specified.
+enum OrderStatus {
+  DRAFT
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  customerId         String?     @map("customer_id")
+  customer           Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  status             OrderStatus @default(DRAFT)
+  currency           String      @db.VarChar(3)
+  subtotalMinor      Int         @default(0) @map("subtotal_minor")
+  deliveryFeeMinor   Int?        @map("delivery_fee_minor")
+  taxMinor           Int?        @map("tax_minor")
+  totalMinor         Int?        @map("total_minor")
+  deliveryAddress    Json?       @map("delivery_address")
+  quoteExpiresAt     DateTime?   @map("quote_expires_at")
+  idempotencyKey     String?     @unique @map("idempotency_key")
+  items              OrderItem[]
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+// Product and option references are optional so immutable snapshots survive
+// catalog cleanup. The name and price columns are the historical source.
+model OrderItem {
+  id              String            @id @default(cuid())
+  orderId         String            @map("order_id")
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productId       String?           @map("product_id")
+  product         Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name            String
+  quantity        Int
+  unitPriceMinor  Int               @map("unit_price_minor")
+  lineTotalMinor  Int               @map("line_total_minor")
+  sortOrder       Int               @default(0) @map("sort_order")
+  selectedOptions OrderItemOption[]
+
+  @@index([orderId, sortOrder])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderItemOption {
+  id              String         @id @default(cuid())
+  orderItemId     String         @map("order_item_id")
+  orderItem       OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  optionId        String?        @map("option_id")
+  option          ProductOption? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+  name            String
+  priceDeltaMinor Int            @map("price_delta_minor")
+
+  @@index([orderItemId])
+  @@index([optionId])
+  @@map("order_item_options")
+}

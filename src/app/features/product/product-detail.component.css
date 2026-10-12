@@ -32,4 +32,5 @@
 .add-cart-button { display: flex; align-items: center; justify-content: space-between; min-height: 3rem; padding: 0 1.1rem; border-radius: 99px; background: var(--color-dark); color: var(--bg-lighter); font-size: .78rem; }
 .view-cart-link { display: block; margin-top: .8rem; color: var(--brand-dark); font-size: .75rem; font-weight: 800; text-align: right; }
 .missing-product, .loading-state { display: grid; min-height: 65dvh; place-items: center; align-content: center; gap: 1rem; text-align: center; }
+.missing-product img { width: min(65vw, 15rem); height: auto; border-radius: 1.25rem; }
 @media (min-width: 720px) { .detail-page { display: grid; grid-template-columns: 1fr 1fr; margin-top: 2rem; overflow: hidden; border: 1px solid var(--border-light); border-radius: 2rem; box-shadow: var(--shadow-md); } .detail-visual { height: auto; min-height: 38rem; } .detail-content { margin-top: 0; padding: 3rem 2rem; border-radius: 0; } }

@@ -39,6 +39,6 @@
 .checkout-button { display: flex; width: 100%; min-height: 3.5rem; align-items: center; justify-content: space-between; padding: 0 1.25rem; border-radius: 1rem; background: var(--color-dark); color: white; font-size: .75rem; font-weight: 800; }
 .checkout-message { margin: .75rem 0 0; padding: .8rem; border-radius: .8rem; background: var(--brand-lighter); color: var(--brand-dark); font-size: .7rem; }
 .empty-cart { display: grid; min-height: 58dvh; place-items: center; align-content: center; text-align: center; }
-.empty-cart > span { display: grid; width: 4rem; height: 4rem; place-items: center; border-radius: 1.25rem; background: var(--brand-lighter); font-size: 2rem; }
+.empty-cart > img { display: block; width: min(100%, 18rem); height: auto; object-fit: contain; }
 .empty-cart h2 { margin: 1rem 0 .35rem; font-size: 1.5rem; }
 .empty-cart p { max-width: 20rem; margin: 0 0 1.4rem; color: var(--color-light); font-size: .8rem; }

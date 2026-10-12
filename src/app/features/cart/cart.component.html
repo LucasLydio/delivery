@@ -43,6 +43,6 @@
     <button class="checkout-button" type="button" [disabled]="cart.preview().needsReview" (click)="checkout()"><span>Revisar pedido</span><span>24 a 35 min · {{ formatPrice(cart.subtotal()) }}</span></button>
     @if (checkoutMessage()) { <p class="checkout-message" role="status">{{ checkoutMessage() }}</p> }
   } @else {
-    <div class="empty-cart"><span aria-hidden="true">◒</span><h2>Seu carrinho está vazio</h2><p>Escolha algo gostoso no cardápio para começar.</p><a class="button button--dark" routerLink="/">Ver cardápio</a></div>
+    <div class="empty-cart"><img src="/images/order-placeholder.webp" alt="Ilustração de um pedido com a mensagem: Faça um pedido!" width="1024" height="1024" decoding="async"><h2>Seu carrinho está vazio</h2><p>Escolha algo gostoso no cardápio para começar.</p><a class="button button--dark" routerLink="/">Ver cardápio</a></div>
   }
 </section>

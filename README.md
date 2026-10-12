@@ -7,7 +7,7 @@ Angular 20 standalone frontend, Netlify Functions TypeScript API, Prisma/Postgre
 Use Node.js 22.12+ (this workspace was built with 22.22.2).
 
 1. Run `npm install`.
-2. Copy `.env.example` to `.env`. To use the local database, start `docker compose up -d`, then run `npm run prisma:migrate:dev -- --name init`. The committed initial migration is also ready for deployment.
+2. Copy `.env.example` to `.env`. To use the local database, start `docker compose up -d`, then run `npm run prisma:migrate:dev` to apply the committed migrations.
 3. Run `npm run dev:netlify`. Open `http://localhost:8888` for the Angular app and `/api/*` Functions.
 4. Run `npm run build` and `npm run typecheck:backend` before deployment.
 

@@ -37,7 +37,7 @@
     </div>
   </article>
 } @else if (config.loaded()) {
-  <section class="missing-product"><h1>Prato não encontrado</h1><a class="button button--dark" routerLink="/">Voltar ao cardápio</a></section>
+  <section class="missing-product"><img src="/images/product-placeholder.webp" alt="Ilustração de uma refeição para viagem" width="1024" height="1024" decoding="async"><h1>Prato não encontrado</h1><a class="button button--dark" routerLink="/">Voltar ao cardápio</a></section>
 } @else {
   <p class="loading-state" role="status">Carregando o prato…</p>
 }

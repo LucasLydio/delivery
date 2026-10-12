@@ -4,7 +4,7 @@ The TypeScript wire types are in [`shared/commerce-contract.ts`](../shared/comme
 
 ## Rules
 
-- Money sent by the API is an integer in the currency's minor units (`1250` means USD 12.50). Product and option prices, subtotals, fees, taxes, and totals use the same currency. The backend validates safe integer ranges and computes every confirmed amount from current database values. The client formats amounts for display with the configured locale and currency.
+- Money sent by the API is an integer in the currency's minor units (`1250` means BRL 12.50). Product and option prices, subtotals, fees, taxes, and totals use the same currency. The backend validates safe integer ranges and computes every confirmed amount from current database values. The client formats amounts for display with the configured locale and currency.
 - Product and option IDs are opaque. A cart line has its own stable ID so the same product with different options can appear twice. Quantity is an integer from 1 to 99. Selected option IDs are unique within a line; the backend checks group minimums, maximums, availability, and ownership by that product.
 - Catalog responses carry a version and fetch time. Product images carry a storage key and display URL; the key is the durable database value. The URL can change when the storage adapter changes.
 - Customer, address, and order data belong behind authenticated or scoped API routes. They must not be placed in the public app configuration or the service worker's public cache.
@@ -31,6 +31,14 @@ When the product API is added, cache public catalog data in IndexedDB and use it
 At checkout, make **one** quote request against current products, option rules, address, fees, and tax. If the server changes any amount or rejects an item, display the differences and require review before any future order placement. A quote expires and is not itself payment authorization. On reconnect, refresh the catalog and cart once, then recompute the preview. These are the only planned automatic refreshes; no fixed-interval cart polling is needed.
 
 The current starter already keeps quantities in `delivery-cart` local storage and computes the preview without API calls. Its sample prices are decimals, so the transition adapter converts them to integer minor units before multiplying. The later catalog API will provide integer prices directly.
+
+## Persistence model (step 5.2)
+
+The versioned Prisma migration adds `Category`, `CatalogRevision`, `Product`, `ProductImage`, `ProductOptionGroup`, `ProductOption`, `Customer`, `Address`, `Cart`, `CartItem`, `CartItemOption`, `Order`, `OrderItem`, and `OrderItemOption`. Product media rows keep storage keys and metadata only; the storage adapter will supply local or Supabase URLs in a later step. A catalog write must increment the singleton `CatalogRevision` row in the same transaction as the change. The API can use that version for an `ETag` and cache invalidation.
+
+Carts keep product and option IDs, quantities, a revision, and an owner. A cart has exactly one customer ID or hashed guest token. It does not persist a trusted price; the server will reprice against current catalog rows for a quote. Orders are limited to `DRAFT` for now and contain item, option, and optional delivery-address snapshots. The migration also adds database checks for quantities, nonnegative amounts, option selection ranges, one cart owner, and one default address per customer.
+
+Currency and country code are required database values rather than hardcoded defaults. Future API writes must take them from trusted server-side brand configuration, currently BRL and BR for this deployment. The customer authentication method and guest checkout policy remain open before customer or order write endpoints are added. This migration does not create a payment or notification delivery model.
 
 ## White-label scope
 
