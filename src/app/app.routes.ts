@@ -6,6 +6,7 @@ import { CartComponent } from './features/cart/cart.component';
 import { ProductDetailComponent } from './features/product/product-detail.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { PersonalInfoComponent } from './features/profile/personal-info.component';
+import { NotFoundComponent } from './features/not-found/not-found.component';
 
 export const routes: Routes = [
   {
@@ -23,7 +24,7 @@ export const routes: Routes = [
       { path: 'payments', component: PlaceholderComponent, data: { title: 'Formas de pagamento', image: '/images/payment-placeholder.webp', imageAlt: 'Ilustração de um cartão e dinheiro com a mensagem: Pague no app' } },
       { path: 'settings', component: PlaceholderComponent, data: { title: 'Configurações', icon: '⚙' } },
       { path: 'support', component: PlaceholderComponent, data: { title: 'Ajuda e suporte', icon: '?' } },
+      { path: '**', component: NotFoundComponent, data: { showHeader: false, showNav: false } },
     ],
   },
-  { path: '**', redirectTo: '' },
 ];
