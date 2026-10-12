@@ -23,7 +23,7 @@ export class PushService {
   async initialize(): Promise<void> {
     if (isDevMode()) {
       this.status.set('unavailable');
-      this.message.set('Notifications can be tested from the production build over HTTPS or localhost.');
+      this.message.set('As notificações podem ser testadas na versão de produção por HTTPS ou localhost.');
       return;
     }
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || !isSecureContext) {
@@ -33,7 +33,7 @@ export class PushService {
     // iOS web push is available only when launched as a Home Screen web app.
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !isStandalone()) {
       this.status.set('unavailable');
-      this.message.set('Install and open the app from your Home Screen to enable notifications.');
+      this.message.set('Instale e abra o aplicativo pela tela de início para ativar as notificações.');
       return;
     }
     try {
@@ -50,7 +50,7 @@ export class PushService {
       }
     } catch {
       this.status.set('error');
-      this.message.set('Notifications could not be checked right now.');
+      this.message.set('Não foi possível verificar as notificações agora.');
     }
   }
 
@@ -71,7 +71,7 @@ export class PushService {
       await this.register(subscription);
     } catch {
       this.status.set('error');
-      this.message.set('Could not register this device. Please try again.');
+      this.message.set('Não foi possível cadastrar este dispositivo. Tente novamente.');
     }
   }
 
@@ -84,10 +84,10 @@ export class PushService {
         await subscription.unsubscribe();
       }
       this.status.set('ready');
-      this.message.set('Notifications turned off for this device.');
+      this.message.set('As notificações foram desativadas neste dispositivo.');
     } catch {
       this.status.set('error');
-      this.message.set('Could not turn off notifications. Please try again.');
+      this.message.set('Não foi possível desativar as notificações. Tente novamente.');
     }
   }
 

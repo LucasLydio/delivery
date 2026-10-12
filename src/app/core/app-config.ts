@@ -1,10 +1,12 @@
 import { Injectable, signal } from '@angular/core';
+import type { BrandConfig } from '../../../shared/commerce-contract';
 
 export interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
+  categoryId: string;
   category: string;
   emoji: string;
   color: string;
@@ -12,22 +14,17 @@ export interface MenuItem {
   imagePosition?: string;
 }
 
-export interface PublicAppConfig {
-  brandName: string;
-  tagline: string;
-  accentColor: string;
-  currency: string;
-  locale: string;
-  realtimeUrl: string | null;
+export interface PublicAppConfig extends BrandConfig {
+  /** Demo catalog until the products API and its local cache are implemented. */
   menu: MenuItem[];
 }
 
 const fallback: PublicAppConfig = {
   brandName: 'Goodside',
-  tagline: 'Fresh food, right on time.',
+  tagline: 'Comida fresquinha, na hora certa.',
   accentColor: '#ef704f',
-  currency: 'USD',
-  locale: 'en-US',
+  currency: 'BRL',
+  locale: 'pt-BR',
   realtimeUrl: null,
   menu: [],
 };

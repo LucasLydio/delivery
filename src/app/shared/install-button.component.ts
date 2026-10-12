@@ -10,27 +10,27 @@ interface InstallPromptEvent extends Event {
   standalone: true,
   template: `
     @if (!installed()) {
-      <button type="button" class="install-button" [class.install-button--compact]="compact" [attr.aria-label]="compact ? 'Install app' : null" (click)="install()">
+      <button type="button" class="install-button" [class.install-button--compact]="compact" [attr.aria-label]="compact ? 'Instalar aplicativo' : null" (click)="install()">
         @if (compact) {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
         } @else {
-          <span aria-hidden="true">↧</span> Install app
+          <span aria-hidden="true">↧</span> Instalar aplicativo
         }
       </button>
     } @else {
-      @if (!compact) { <span class="installed-badge">✓ Installed</span> }
+      @if (!compact) { <span class="installed-badge">✓ Instalado</span> }
     }
     <dialog #helpDialog class="install-help" aria-labelledby="install-title">
         <div class="install-help__panel">
-          <button type="button" class="icon-button close-button" aria-label="Close install instructions" (click)="closeHelp()">×</button>
+          <button type="button" class="icon-button close-button" aria-label="Fechar instruções de instalação" (click)="closeHelp()">×</button>
           <div class="install-help__icon" aria-hidden="true">↧</div>
-          <h2 id="install-title">Put us on your home screen</h2>
+          <h2 id="install-title">Adicione à tela de início</h2>
           @if (isIos) {
-            <p>In Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. Open the new icon to use the app and enable notifications.</p>
+            <p>No Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>. Abra o aplicativo pelo novo ícone para receber notificações.</p>
           } @else {
-            <p>Open your browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>. Then open it from the new icon.</p>
+            <p>Abra o menu do navegador e escolha <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>. Depois, abra pelo novo ícone.</p>
           }
-          <button type="button" class="button button--dark" (click)="closeHelp()">Got it</button>
+          <button type="button" class="button button--dark" (click)="closeHelp()">Entendi</button>
         </div>
     </dialog>
   `,

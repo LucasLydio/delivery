@@ -1,20 +1,20 @@
 <section class="info-page" aria-labelledby="info-title">
-  <div class="info-header"><a routerLink="/profile" aria-label="Back to profile">←</a><h1 id="info-title">Personal information</h1><span></span></div>
+  <div class="info-header"><a routerLink="/profile" aria-label="Voltar ao perfil">←</a><h1 id="info-title">Dados pessoais</h1><span></span></div>
 
-  <div class="avatar-editor"><div class="avatar" aria-hidden="true">{{ initials() }}<span>✎</span></div><button type="button">Change your photo</button></div>
+  <div class="avatar-editor"><div class="avatar" aria-hidden="true">{{ initials() }}<span>✎</span></div><button type="button">Alterar foto</button></div>
 
   <form [formGroup]="form" (ngSubmit)="save()" novalidate>
-    <label class="full-field"><span>Name</span><input type="text" formControlName="name" autocomplete="name" [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"></label>
-    @if (form.controls.name.invalid && form.controls.name.touched) { <small class="field-error">Please enter your name.</small> }
+    <label class="full-field"><span>Nome</span><input type="text" formControlName="name" autocomplete="name" [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"></label>
+    @if (form.controls.name.invalid && form.controls.name.touched) { <small class="field-error">Informe seu nome.</small> }
     <div class="field-row">
-      <label><span>Email</span><input type="email" formControlName="email" autocomplete="email" [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched"></label>
-      <label><span>Phone number</span><input type="tel" formControlName="phone" autocomplete="tel" [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched"></label>
+      <label><span>E-mail</span><input type="email" formControlName="email" autocomplete="email" [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched"></label>
+      <label><span>Telefone</span><input type="tel" formControlName="phone" autocomplete="tel" [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched"></label>
     </div>
-    @if (form.controls.email.invalid && form.controls.email.touched) { <small class="field-error">Enter a valid email address.</small> }
-    <label class="full-field"><span>Delivery address</span><input type="text" formControlName="address" autocomplete="street-address" [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"></label>
-    <label class="full-field"><span>About me</span><textarea formControlName="bio" rows="4" maxlength="240"></textarea><small>{{ form.controls.bio.value.length }}/240</small></label>
+    @if (form.controls.email.invalid && form.controls.email.touched) { <small class="field-error">Informe um e-mail válido.</small> }
+    <label class="full-field"><span>Endereço de entrega</span><input type="text" formControlName="address" autocomplete="street-address" [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"></label>
+    <label class="full-field"><span>Sobre mim</span><textarea formControlName="bio" rows="4" maxlength="240"></textarea><small>{{ form.controls.bio.value.length }}/240</small></label>
 
-    <button class="save-button" type="submit" [disabled]="form.invalid">Save changes</button>
-    @if (saved()) { <p class="saved-message" role="status">Your information has been saved.</p> }
+    <button class="save-button" type="submit" [disabled]="form.invalid">Salvar alterações</button>
+    @if (saved()) { <p class="saved-message" role="status">Seus dados foram salvos.</p> }
   </form>
 </section>

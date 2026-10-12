@@ -1,9 +1,12 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AppConfigService, MenuItem } from './app-config';
+import { calculateCartPreview, demoPriceToMinor, minorToMajor } from '../../../shared/cart-preview';
+import type { CartDraft, CatalogSnapshot } from '../../../shared/commerce-contract';
 
 export interface CartLine {
   item: MenuItem;
   quantity: number;
+  totalMinor: number;
   total: number;
 }
 
@@ -13,11 +16,41 @@ export class CartService {
   private readonly quantities = signal<Record<string, number>>(this.readStoredCart());
 
   readonly count = computed(() => Object.values(this.quantities()).reduce((total, quantity) => total + quantity, 0));
-  readonly lines = computed<CartLine[]>(() => this.config.config().menu
-    .map(item => ({ item, quantity: this.quantities()[item.id] ?? 0 }))
-    .filter(line => line.quantity > 0)
-    .map(line => ({ ...line, total: line.item.price * line.quantity })));
-  readonly subtotal = computed(() => this.lines().reduce((total, line) => total + line.total, 0));
+  private readonly demoCatalog = computed<CatalogSnapshot>(() => {
+    const { menu, currency, locale } = this.config.config();
+    return {
+      version: 'demo-menu-v1',
+      fetchedAt: new Date(0).toISOString(),
+      currency,
+      products: menu.map(item => ({
+        id: item.id, slug: item.id, name: item.name, description: item.description,
+        categoryId: item.categoryId, categoryName: item.category,
+        basePriceMinor: demoPriceToMinor(item.price, currency, locale), currency,
+        available: true, images: [], optionGroups: [],
+      })),
+    };
+  });
+  private readonly draft = computed<CartDraft>(() => ({
+    id: null, revision: null,
+    items: Object.entries(this.quantities()).map(([productId, quantity]) => ({
+      id: productId, productId, quantity, selectedOptionIds: [],
+    })),
+  }));
+  readonly preview = computed(() => calculateCartPreview(this.demoCatalog(), this.draft()));
+  readonly lines = computed<CartLine[]>(() => {
+    const menu = new Map(this.config.config().menu.map(item => [item.id, item]));
+    const { currency, locale } = this.config.config();
+    return this.preview().lines.flatMap(line => {
+      const item = menu.get(line.productId);
+      return item ? [{ item, quantity: line.quantity, totalMinor: line.lineTotalMinor,
+        total: minorToMajor(line.lineTotalMinor, currency, locale) }] : [];
+    });
+  });
+  readonly subtotalMinor = computed(() => this.preview().subtotalMinor);
+  readonly subtotal = computed(() => {
+    const { currency, locale } = this.config.config();
+    return minorToMajor(this.subtotalMinor(), currency, locale);
+  });
 
   quantity(itemId: string): number {
     return this.quantities()[itemId] ?? 0;

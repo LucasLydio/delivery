@@ -12,7 +12,7 @@
 .filter-button { display: grid; flex: 0 0 3.1rem; height: 3.1rem; place-items: center; border-radius: 50%; background: var(--color-dark); color: var(--bg-lighter); }
 .category-list { display: flex; gap: .8rem; overflow-x: auto; margin: 1.5rem -1rem 1.7rem; padding: 0 1rem .35rem; scrollbar-width: none; }
 .category-list::-webkit-scrollbar { display: none; }
-.category { display: grid; flex: 0 0 4.4rem; justify-items: center; gap: .45rem; padding: 0; background: transparent; color: var(--color-light); font-size: .68rem; }
+.category { display: grid; flex: 0 0 5.25rem; justify-items: center; gap: .45rem; padding: 0; background: transparent; color: var(--color-light); font-size: .68rem; line-height: 1.2; text-align: center; }
 .category__icon { display: grid; width: 3.4rem; height: 3.4rem; place-items: center; border: 1px solid var(--border-light); border-radius: 50%; background: var(--bg-light); color: var(--color-dark); font-size: 1.3rem; transition: background var(--transition-fast), color var(--transition-fast); }
 .category--active { color: var(--color-dark); font-weight: 750; }
 .category--active .category__icon { background: var(--brand-medium); color: white; border-color: var(--brand-medium); }

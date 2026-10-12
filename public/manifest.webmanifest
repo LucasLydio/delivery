@@ -1,8 +1,9 @@
 {
   "id": "/",
-  "name": "Goodside Delivery",
+  "name": "Goodside Entregas",
   "short_name": "Goodside",
-  "description": "Fresh food, right on time.",
+  "description": "Comida fresquinha, na hora certa.",
+  "lang": "pt-BR",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

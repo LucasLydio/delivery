@@ -28,6 +28,6 @@ export class CartComponent {
   }
 
   checkout(): void {
-    this.checkoutMessage.set('Checkout is ready for payment integration in the next backend milestone.');
+    this.checkoutMessage.set('Este pedido é uma prévia. Em breve você poderá finalizar a compra.');
   }
 }

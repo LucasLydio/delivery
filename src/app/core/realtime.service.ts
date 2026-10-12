@@ -51,7 +51,7 @@ export class RealtimeService {
       this.latest.set(await this.api.latestState());
       this.error.set(null);
     } catch {
-      this.error.set('Could not refresh updates. We’ll retry when you reopen the app.');
+      this.error.set('Não foi possível atualizar as informações. Tentaremos novamente quando você abrir o aplicativo.');
     } finally {
       this.refreshing = false;
       this.connection.set(!navigator.onLine ? 'offline' : this.socket?.readyState === WebSocket.OPEN ? 'live' : 'on-open');
@@ -61,7 +61,7 @@ export class RealtimeService {
   private connect(url: string): void {
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) return;
     if (!/^wss:\/\//.test(url) && !/^ws:\/\/localhost(?::\d+)?(?:\/|$)/.test(url)) {
-      this.error.set('Realtime URL must use a secure WebSocket.');
+      this.error.set('A conexão em tempo real precisa ser segura.');
       return;
     }
     this.connection.set('connecting');

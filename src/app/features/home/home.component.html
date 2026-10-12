@@ -1,35 +1,35 @@
 <section class="menu-page" aria-labelledby="menu-title">
   <div class="menu-intro">
-    <p class="menu-kicker">GOOD FOOD, FAST</p>
-    <h1 id="menu-title">Hungry? <span>Order & eat.</span></h1>
-    <p class="menu-subtitle">Fresh favorites, ready when you are.</p>
+    <p class="menu-kicker">COMIDA BOA, ENTREGA RÁPIDA</p>
+    <h1 id="menu-title">Bateu a fome? <span>Peça e aproveite.</span></h1>
+    <p class="menu-subtitle">Seus pratos favoritos, fresquinhos e prontos para você.</p>
   </div>
 
   <div class="search-row">
     <label class="menu-search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg>
-      <span class="sr-only">Search menu</span>
-      <input type="search" placeholder="Search for food…" [ngModel]="query()" (ngModelChange)="query.set($event)">
+      <span class="sr-only">Buscar no cardápio</span>
+      <input type="search" placeholder="O que você quer comer?" [ngModel]="query()" (ngModelChange)="query.set($event)">
     </label>
-    <button class="filter-button" type="button" aria-label="Filter menu">
+    <button class="filter-button" type="button" aria-label="Filtrar cardápio">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6" /></svg>
     </button>
   </div>
 
-  <div class="category-list" aria-label="Menu categories">
-    @for (option of categories(); track option) {
-      <button type="button" class="category" [class.category--active]="category() === option" [attr.aria-pressed]="category() === option" (click)="category.set(option)">
-        <span class="category__icon" aria-hidden="true">{{ option === 'All' ? '✦' : option === 'Bowls' ? '🥢' : option === 'Pizza' ? '◒' : '≋' }}</span>
-        <span>{{ option }}</span>
+  <div class="category-list" aria-label="Categorias do cardápio">
+    @for (option of categories(); track option.id) {
+      <button type="button" class="category" [class.category--active]="category() === option.id" [attr.aria-pressed]="category() === option.id" (click)="category.set(option.id)">
+        <span class="category__icon" aria-hidden="true">{{ option.id === 'all' ? '✦' : option.id === 'bowls' ? '🥢' : option.id === 'pizza' ? '◒' : '≋' }}</span>
+        <span>{{ option.label }}</span>
       </button>
     }
   </div>
 
   <article class="featured-card">
     <div class="featured-card__copy">
-      <span>HITS OF THE WEEK</span>
-      <h2>Colorful food for brighter days.</h2>
-      <a routerLink="/product/pizza">Explore favorites <span aria-hidden="true">→</span></a>
+      <span>DESTAQUES DA SEMANA</span>
+      <h2>Mais sabor para o seu dia.</h2>
+      <a routerLink="/product/pizza">Conheça os favoritos <span aria-hidden="true">→</span></a>
     </div>
     @if (config.config().menu[1]; as featured) {
       <div class="featured-card__dish"><app-dish-image [item]="featured" /></div>
@@ -37,17 +37,17 @@
   </article>
 
   <div class="section-title">
-    <div><p>OUR MENU</p><h2>Popular near you</h2></div>
-    <span>{{ visibleMenu().length }} dishes</span>
+    <div><p>NOSSO CARDÁPIO</p><h2>Os mais pedidos</h2></div>
+    <span>{{ visibleMenu().length }} {{ visibleMenu().length === 1 ? 'prato' : 'pratos' }}</span>
   </div>
 
   @if (!config.loaded()) {
-    <p class="menu-state" role="status">Loading the menu…</p>
+    <p class="menu-state" role="status">Carregando o cardápio…</p>
   } @else {
     <div class="product-grid">
       @for (item of visibleMenu(); track item.id) {
         <article class="product-card">
-          <a class="product-card__image" [routerLink]="['/product', item.id]" [style.background]="item.color" [attr.aria-label]="'View ' + item.name">
+          <a class="product-card__image" [routerLink]="['/product', item.id]" [style.background]="item.color" [attr.aria-label]="'Ver ' + item.name">
             <app-dish-image [item]="item" />
             @if (item.tag) { <span class="product-card__tag">{{ item.tag }}</span> }
           </a>
@@ -56,22 +56,22 @@
             <p>{{ item.description }}</p>
             <div class="product-card__footer">
               <strong>{{ formatPrice(item.price) }}</strong>
-              <button type="button" class="add-button" [attr.aria-label]="'Add ' + item.name + ' to cart'" (click)="add(item)">
+              <button type="button" class="add-button" [attr.aria-label]="'Adicionar ' + item.name + ' ao carrinho'" (click)="add(item)">
                 @if (cart.quantity(item.id) > 0) { <span>{{ cart.quantity(item.id) }}</span> } @else { <span aria-hidden="true">+</span> }
               </button>
             </div>
           </div>
         </article>
       } @empty {
-        <p class="menu-state">No dishes match your search. Try another word or category.</p>
+        <p class="menu-state">Nenhum prato encontrado. Tente outra busca ou categoria.</p>
       }
     </div>
   }
 
   @if (cart.count() > 0) {
-    <a class="cart-peek" routerLink="/cart" aria-label="Open cart">
+    <a class="cart-peek" routerLink="/cart" aria-label="Abrir carrinho">
       <span class="cart-peek__count">{{ cart.count() }}</span>
-      <span><strong>View cart</strong><small>Your order is waiting</small></span>
+      <span><strong>Ver carrinho</strong><small>Seu pedido está esperando</small></span>
       <strong>{{ formatPrice(cart.subtotal()) }}</strong>
     </a>
   }

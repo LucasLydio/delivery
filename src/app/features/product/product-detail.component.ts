@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AppConfigService } from '../../core/app-config';
 import { CartService } from '../../core/cart.service';
 import { DishImageComponent } from '../../shared/dish-image.component';
+import { demoPriceToMinor, minorToMajor } from '../../../../shared/cart-preview';
 
 @Component({
   selector: 'app-product-detail',
@@ -18,7 +19,11 @@ export class ProductDetailComponent {
   readonly quantity = signal(1);
   readonly added = signal(false);
   readonly item = computed(() => this.config.config().menu.find(item => item.id === this.route.snapshot.paramMap.get('id')) ?? null);
-  readonly total = computed(() => (this.item()?.price ?? 0) * this.quantity());
+  readonly total = computed(() => {
+    const { currency, locale } = this.config.config();
+    const priceMinor = demoPriceToMinor(this.item()?.price ?? 0, currency, locale);
+    return minorToMajor(priceMinor * this.quantity(), currency, locale);
+  });
 
   increment(): void { this.quantity.update(value => Math.min(20, value + 1)); }
   decrement(): void { this.quantity.update(value => Math.max(1, value - 1)); }

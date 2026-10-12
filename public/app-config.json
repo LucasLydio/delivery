@@ -1,14 +1,14 @@
 {
   "brandName": "Goodside",
-  "tagline": "Fresh food, right on time.",
+  "tagline": "Comida fresquinha, na hora certa.",
   "accentColor": "#ef704f",
-  "currency": "USD",
-  "locale": "en-US",
+  "currency": "BRL",
+  "locale": "pt-BR",
   "realtimeUrl": null,
   "menu": [
-    { "id": "poke", "name": "Chicken poke bowl", "description": "Brown rice, tender chicken, avocado and bright greens.", "price": 12.5, "category": "Bowls", "emoji": "🥗", "color": "#eaf1df", "tag": "Bestseller", "imagePosition": "0% 0%" },
-    { "id": "pizza", "name": "Garden pizza", "description": "Crisp crust, creamy mozzarella and market vegetables.", "price": 14.0, "category": "Pizza", "emoji": "🍕", "color": "#f9e5d7", "tag": "Popular", "imagePosition": "100% 0%" },
-    { "id": "burger", "name": "The good burger", "description": "Juicy patty, fresh lettuce and our house sauce.", "price": 11.8, "category": "Burgers", "emoji": "🍔", "color": "#f8edce", "imagePosition": "0% 100%" },
-    { "id": "noodles", "name": "Spicy sesame noodles", "description": "Warm noodles, sesame crunch and a gentle kick.", "price": 10.4, "category": "Bowls", "emoji": "🍜", "color": "#f5e3d6", "imagePosition": "100% 100%" }
+    { "id": "poke", "name": "Poke de frango", "description": "Arroz integral, frango macio, abacate e folhas frescas.", "price": 12.5, "categoryId": "bowls", "category": "Tigelas", "emoji": "🥗", "color": "#eaf1df", "tag": "Mais pedido", "imagePosition": "0% 0%" },
+    { "id": "pizza", "name": "Pizza da horta", "description": "Massa crocante, muçarela cremosa e vegetais frescos.", "price": 14.0, "categoryId": "pizza", "category": "Pizzas", "emoji": "🍕", "color": "#f9e5d7", "tag": "Popular", "imagePosition": "100% 0%" },
+    { "id": "burger", "name": "Hambúrguer da casa", "description": "Hambúrguer suculento, alface fresca e molho especial.", "price": 11.8, "categoryId": "burgers", "category": "Hambúrgueres", "emoji": "🍔", "color": "#f8edce", "imagePosition": "0% 100%" },
+    { "id": "noodles", "name": "Macarrão com gergelim picante", "description": "Macarrão quentinho, gergelim crocante e um toque de pimenta.", "price": 10.4, "categoryId": "bowls", "category": "Tigelas", "emoji": "🍜", "color": "#f5e3d6", "imagePosition": "100% 100%" }
   ]
 }

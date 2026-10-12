@@ -8,10 +8,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
   template: `
     <section class="placeholder-page">
       <span class="placeholder-icon" aria-hidden="true">{{ icon }}</span>
-      <p class="placeholder-kicker">COMING NEXT</p>
+      <p class="placeholder-kicker">EM BREVE</p>
       <h1>{{ title }}</h1>
-      <p>This screen now has a place in the app shell and will be built in the next UI milestone.</p>
-      <a class="button button--dark" routerLink="/">Back to menu</a>
+      <p>Estamos preparando esta página para você.</p>
+      <a class="button button--dark" routerLink="/">Voltar ao cardápio</a>
     </section>
   `,
   styles: [`

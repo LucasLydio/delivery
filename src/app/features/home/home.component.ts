@@ -5,6 +5,10 @@ import { AppConfigService, MenuItem } from '../../core/app-config';
 import { CartService } from '../../core/cart.service';
 import { DishImageComponent } from '../../shared/dish-image.component';
 
+function normalizeSearch(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -16,12 +20,15 @@ export class HomeComponent {
   readonly config = inject(AppConfigService);
   readonly cart = inject(CartService);
   readonly query = signal('');
-  readonly category = signal('All');
-  readonly categories = computed(() => ['All', ...new Set(this.config.config().menu.map(item => item.category))]);
+  readonly category = signal('all');
+  readonly categories = computed(() => [
+    { id: 'all', label: 'Todas' },
+    ...new Map(this.config.config().menu.map(item => [item.categoryId, { id: item.categoryId, label: item.category }])).values(),
+  ]);
   readonly visibleMenu = computed(() => this.config.config().menu.filter(item => {
-    const matchesCategory = this.category() === 'All' || item.category === this.category();
-    const text = `${item.name} ${item.description}`.toLowerCase();
-    return matchesCategory && text.includes(this.query().trim().toLowerCase());
+    const matchesCategory = this.category() === 'all' || item.categoryId === this.category();
+    const text = normalizeSearch(`${item.name} ${item.description}`);
+    return matchesCategory && text.includes(normalizeSearch(this.query().trim()));
   }));
   add(item: MenuItem): void {
     this.cart.add(item.id);

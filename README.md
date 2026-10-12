@@ -23,7 +23,7 @@ Do not run production migrations automatically during a normal site build. Revie
 
 ## White label settings
 
-Edit `public/app-config.json` to change the brand name, accent, currency, locale, sample menu, and WebSocket gateway URL. Edit `public/manifest.webmanifest` and `src/index.html` for the installed app name and metadata. Regenerate or replace the PNG icons in `public/icons/` for the new brand. Components and API routes do not contain customer branding.
+Edit `public/app-config.json` to change the brand name, accent, currency, locale, temporary sample menu, and WebSocket gateway URL. The [commerce data contract](docs/commerce-data-contract.md) defines the future catalog API and cached cart preview; the sample menu will move out of this file when that API is built. Edit `public/manifest.webmanifest` and `src/index.html` for the installed app name and metadata. Regenerate or replace the PNG icons in `public/icons/` for the new brand. Components and API routes do not contain customer branding.
 
 Menu items are illustrative local data. The basket is a UI preview and deliberately has no checkout action.
 
