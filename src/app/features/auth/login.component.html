@@ -1,0 +1,35 @@
+<section class="login-page" aria-labelledby="login-title">
+  <a class="back-link" routerLink="/" aria-label="Voltar ao cardápio">←</a>
+  <div class="login-card">
+    <div class="brand-mark" aria-hidden="true">✳</div>
+    <p class="eyebrow">BEM-VINDO AO {{ config.config().brandName.toLocaleUpperCase('pt-BR') }}</p>
+    <h1 id="login-title">Entre para continuar</h1>
+    <p class="login-intro">Use seu nome e celular. Se for sua primeira vez, criaremos seu cadastro automaticamente.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label for="login-name">Nome</label>
+      <input id="login-name" type="text" formControlName="name" autocomplete="name" maxlength="80"
+        placeholder="Seu nome" [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        [attr.aria-describedby]="form.controls.name.invalid && form.controls.name.touched ? 'name-error' : null">
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <small id="name-error" class="field-error">Use apenas letras e espaços.</small>
+      }
+
+      <label for="login-phone">Celular</label>
+      <input id="login-phone" type="tel" formControlName="phone" autocomplete="tel-national" inputmode="numeric"
+        maxlength="16" placeholder="(11) 9 8765-4321" (input)="formatPhone($event)"
+        [attr.aria-invalid]="form.controls.phone.invalid && form.controls.phone.touched"
+        [attr.aria-describedby]="form.controls.phone.invalid && form.controls.phone.touched ? 'phone-error' : null">
+      @if (form.controls.phone.invalid && form.controls.phone.touched) {
+        <small id="phone-error" class="field-error">Informe um celular no formato (XX) 9 XXXX-XXXX.</small>
+      }
+
+      @if (error()) { <p class="form-error" role="alert">{{ error() }}</p> }
+      <button class="login-button" type="submit" [disabled]="form.invalid || submitting()">
+        {{ submitting() ? 'Entrando…' : 'Entrar e continuar' }}
+      </button>
+    </form>
+    <p class="privacy-note">Seu acesso é protegido por uma sessão segura neste dispositivo.</p>
+  </div>
+</section>
+

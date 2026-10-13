@@ -1,12 +1,14 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './features/home/home.component';
-import { PlaceholderComponent } from './features/placeholder/placeholder.component';
-import { AppShellComponent } from './layout/app-shell.component';
+import { authGuard } from './core/auth.guard';
+import { LoginComponent } from './features/auth/login.component';
 import { CartComponent } from './features/cart/cart.component';
-import { ProductDetailComponent } from './features/product/product-detail.component';
-import { ProfileComponent } from './features/profile/profile.component';
-import { PersonalInfoComponent } from './features/profile/personal-info.component';
+import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
+import { PlaceholderComponent } from './features/placeholder/placeholder.component';
+import { ProductDetailComponent } from './features/product/product-detail.component';
+import { PersonalInfoComponent } from './features/profile/personal-info.component';
+import { ProfileComponent } from './features/profile/profile.component';
+import { AppShellComponent } from './layout/app-shell.component';
 
 export const routes: Routes = [
   {
@@ -14,17 +16,19 @@ export const routes: Routes = [
     component: AppShellComponent,
     children: [
       { path: '', component: HomeComponent, data: { showHeader: true, showNav: true } },
+      { path: 'login', component: LoginComponent, data: { showHeader: false, showNav: false } },
       { path: 'product/:id', component: ProductDetailComponent, data: { showHeader: false, showNav: false } },
       { path: 'offers', component: PlaceholderComponent, data: { title: 'Ofertas', image: '/images/offer-placeholder.webp', imageAlt: 'Ilustração de cupons com a mensagem: Sem ofertas' } },
-      { path: 'orders', component: PlaceholderComponent, data: { title: 'Seus pedidos', image: '/images/order-placeholder.webp', imageAlt: 'Ilustração de um pedido com a mensagem: Faça um pedido!' } },
-      { path: 'cart', component: CartComponent, data: { showHeader: false, showNav: false } },
-      { path: 'profile/edit', component: PersonalInfoComponent, data: { showHeader: false, showNav: false } },
-      { path: 'profile', component: ProfileComponent, data: { showHeader: false, showNav: true } },
-      { path: 'addresses', component: PlaceholderComponent, data: { title: 'Endereços', image: '/images/address-placeholder.webp', imageAlt: 'Ilustração de uma casa e uma entrega com a mensagem: Facilite a entrega!' } },
-      { path: 'payments', component: PlaceholderComponent, data: { title: 'Formas de pagamento', image: '/images/payment-placeholder.webp', imageAlt: 'Ilustração de um cartão e dinheiro com a mensagem: Pague no app' } },
+      { path: 'orders', component: PlaceholderComponent, canActivate: [authGuard], data: { title: 'Seus pedidos', image: '/images/order-placeholder.webp', imageAlt: 'Ilustração de um pedido com a mensagem: Faça um pedido!' } },
+      { path: 'cart', component: CartComponent, canActivate: [authGuard], data: { showHeader: false, showNav: false } },
+      { path: 'profile/edit', component: PersonalInfoComponent, canActivate: [authGuard], data: { showHeader: false, showNav: false } },
+      { path: 'profile', component: ProfileComponent, canActivate: [authGuard], data: { showHeader: false, showNav: true } },
+      { path: 'addresses', component: PlaceholderComponent, canActivate: [authGuard], data: { title: 'Endereços', image: '/images/address-placeholder.webp', imageAlt: 'Ilustração de uma casa e uma entrega com a mensagem: Facilite a entrega!' } },
+      { path: 'payments', component: PlaceholderComponent, canActivate: [authGuard], data: { title: 'Formas de pagamento', image: '/images/payment-placeholder.webp', imageAlt: 'Ilustração de um cartão e dinheiro com a mensagem: Pague no app' } },
       { path: 'settings', component: PlaceholderComponent, data: { title: 'Configurações', icon: '⚙' } },
       { path: 'support', component: PlaceholderComponent, data: { title: 'Ajuda e suporte', icon: '?' } },
       { path: '**', component: NotFoundComponent, data: { showHeader: false, showNav: false } },
     ],
   },
 ];
+

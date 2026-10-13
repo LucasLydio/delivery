@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getRuntimeConfig } from "./config/env";
+import { getProductStorage } from "./config/storage";
 import { getCatalogCache } from "./infra/redis/catalog-cache";
 import { AddressesController } from "./modules/addresses/addresses.controller";
 import { PrismaAddressesRepository } from "./modules/addresses/addresses.repository";
@@ -9,6 +10,10 @@ import { CartsController } from "./modules/carts/carts.controller";
 import { PrismaCartsRepository } from "./modules/carts/carts.repository";
 import { createCartsRoutes } from "./modules/carts/carts.routes";
 import { CartsService } from "./modules/carts/carts.service";
+import { CategoriesController } from "./modules/categories/categories.controller";
+import { PrismaCategoriesRepository } from "./modules/categories/categories.repository";
+import { createCategoriesRoutes } from "./modules/categories/categories.routes";
+import { CategoriesService } from "./modules/categories/categories.service";
 import { CustomersController } from "./modules/customers/customers.controller";
 import { PrismaCustomersRepository } from "./modules/customers/customers.repository";
 import { createCustomersRoutes } from "./modules/customers/customers.routes";
@@ -35,6 +40,7 @@ import { SystemService } from "./modules/system/system.service";
 export interface RouteDependencies {
   addressesService?: AddressesService;
   cartsService?: CartsService;
+  categoriesService?: CategoriesService;
   customersService?: CustomersService;
   productsService?: ProductsService;
   ordersService?: OrdersService;
@@ -51,6 +57,9 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
     config.CART_DELIVERY_FEE_MINOR,
     config.CART_QUOTE_TTL_SECONDS,
   );
+  const categoriesService = dependencies.categoriesService ?? new CategoriesService(
+    new PrismaCategoriesRepository(), getCatalogCache(), config.CACHE_NAMESPACE,
+  );
   const customersService = dependencies.customersService ?? new CustomersService(
     new PrismaCustomersRepository(),
     new CustomerTokenService(
@@ -65,7 +74,7 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
     new PrismaProductsRepository(),
     getCatalogCache(),
     config.CATALOG_CURRENCY,
-    config.PRODUCT_IMAGE_BASE_URL,
+    getProductStorage(),
     config.CACHE_NAMESPACE,
   );
   const ordersService = dependencies.ordersService ?? createDefaultOrdersService();
@@ -84,6 +93,7 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
   )));
   router.use("/me/addresses", createAddressesRoutes(new AddressesController(addressesService, customersService)));
   router.use("/cart", createCartsRoutes(new CartsController(cartsService, customersService)));
+  router.use("/categories", createCategoriesRoutes(new CategoriesController(categoriesService)));
   const ordersController = new OrdersController(ordersService, customersService);
   router.use("/checkout", createCheckoutRoutes(ordersController));
   router.use("/orders", createOrdersRoutes(ordersController));

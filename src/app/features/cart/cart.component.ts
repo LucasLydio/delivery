@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppConfigService } from '../../core/app-config';
 import { CartService } from '../../core/cart.service';
-import { ProfileService } from '../../core/profile.service';
 import { DishImageComponent } from '../../shared/dish-image.component';
 
 @Component({
@@ -15,7 +14,6 @@ import { DishImageComponent } from '../../shared/dish-image.component';
 export class CartComponent {
   readonly cart = inject(CartService);
   readonly config = inject(AppConfigService);
-  readonly profile = inject(ProfileService);
   readonly cutlery = signal(0);
   readonly checkoutMessage = signal<string | null>(null);
 

@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ProductsService, productImageUrl, toCatalogProduct } from "./products.service";
+import { createProductStorage } from "../../config/storage";
+import { ProductsService, toCatalogProduct } from "./products.service";
 import { MemoryCache, MemoryProductsRepository, productFixture } from "./products.fixtures";
 
+const storage = createProductStorage({
+  STORAGE_PROVIDER: "local", PRODUCT_IMAGE_BASE_URL: "/images/products/", LOCAL_PRODUCT_IMAGE_DIRECTORY: "public/images/products",
+});
+
 test("maps the persisted product, options, and image key to the shared wire contract", () => {
-  const product = toCatalogProduct(productFixture(), "/images/products/");
+  const product = toCatalogProduct(productFixture(), storage);
   assert.equal(product.basePriceMinor, 2590);
   assert.equal(product.categoryName, "Pratos");
   assert.deepEqual(product.images[0], {
@@ -14,13 +19,12 @@ test("maps the persisted product, options, and image key to the shared wire cont
   assert.deepEqual(product.optionGroups[0].options[0], {
     id: "option-1", name: "Abacate", priceDeltaMinor: 350, available: true,
   });
-  assert.equal(productImageUrl("https://example.test/bucket", "menu/poke.webp"), "https://example.test/bucket/menu/poke.webp");
 });
 
 test("uses cached snapshots until the database revision changes", async () => {
   const repository = new MemoryProductsRepository();
   const cache = new MemoryCache();
-  const service = new ProductsService(repository, cache, "BRL", "/images/products/", "test", () => new Date("2026-10-12T00:00:00.000Z"));
+  const service = new ProductsService(repository, cache, "BRL", storage, "test", () => new Date("2026-10-12T00:00:00.000Z"));
 
   const first = await service.list(await service.version());
   const second = await service.list(await service.version());
@@ -40,7 +44,7 @@ test("uses cached snapshots until the database revision changes", async () => {
 test("rejects a catalog with prices in a different currency", async () => {
   const repository = new MemoryProductsRepository();
   repository.rows[0].currency = "USD";
-  const service = new ProductsService(repository, new MemoryCache(), "BRL", "/images/products/", "test");
+  const service = new ProductsService(repository, new MemoryCache(), "BRL", storage, "test");
   await assert.rejects(service.list(1), /currency/);
   await assert.rejects(service.findById("product-1", 1), /currency/);
 });

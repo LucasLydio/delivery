@@ -1,4 +1,5 @@
 import type { CatalogProduct, CatalogSnapshot } from "../../../shared/commerce-contract";
+import type { ProductStorage } from "../../config/storage";
 import type { ProductRow, ProductsRepository } from "./products.repository";
 import { searchCacheSegment, type SearchCriteria } from "../../utils/search";
 
@@ -7,12 +8,7 @@ export interface CatalogCache {
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
 }
 
-export function productImageUrl(baseUrl: string, storageKey: string): string {
-  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-  return `${base}${storageKey.split("/").map(encodeURIComponent).join("/")}`;
-}
-
-export function toCatalogProduct(row: ProductRow, imageBaseUrl: string): CatalogProduct {
+export function toCatalogProduct(row: ProductRow, storage: ProductStorage): CatalogProduct {
   return {
     id: row.id,
     slug: row.slug,
@@ -25,7 +21,7 @@ export function toCatalogProduct(row: ProductRow, imageBaseUrl: string): Catalog
     available: row.available,
     images: row.images.map((image) => ({
       key: image.storageKey,
-      url: productImageUrl(imageBaseUrl, image.storageKey),
+      url: storage.publicUrl(image.storageKey),
       alt: image.alt,
       width: image.width,
       height: image.height,
@@ -50,7 +46,7 @@ export class ProductsService {
     private readonly repository: ProductsRepository,
     private readonly cache: CatalogCache,
     private readonly currency: string,
-    private readonly imageBaseUrl: string,
+    private readonly storage: ProductStorage,
     private readonly namespace: string,
     private readonly now: () => Date = () => new Date(),
   ) {}
@@ -71,7 +67,7 @@ export class ProductsService {
       version: String(version),
       fetchedAt: this.now().toISOString(),
       currency: this.currency,
-      products: rows.map((row) => toCatalogProduct(row, this.imageBaseUrl)),
+      products: rows.map((row) => toCatalogProduct(row, this.storage)),
     };
     await this.cache.set(key, JSON.stringify(snapshot), 300);
     return snapshot;
@@ -88,7 +84,7 @@ export class ProductsService {
     const row = await this.repository.findById(id);
     if (!row) return null;
     if (row.currency !== this.currency) throw new Error("Catalog currency does not match brand currency");
-    const product = toCatalogProduct(row, this.imageBaseUrl);
+    const product = toCatalogProduct(row, this.storage);
     await this.cache.set(key, JSON.stringify(product), 300);
     return product;
   }

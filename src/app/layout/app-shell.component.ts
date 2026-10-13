@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InstallButtonComponent } from '../shared/install-button.component';
 import { AppConfigService } from '../core/app-config';
 import { CartService } from '../core/cart.service';
-import { ProfileService } from '../core/profile.service';
+import { AuthService } from '../core/auth.service';
 import { PushService } from '../core/push.service';
 import { RealtimeService } from '../core/realtime.service';
 
@@ -19,7 +19,7 @@ import { RealtimeService } from '../core/realtime.service';
 export class AppShellComponent implements OnInit {
   readonly config = inject(AppConfigService);
   readonly cart = inject(CartService);
-  readonly profile = inject(ProfileService);
+  readonly auth = inject(AuthService);
   readonly showHeader = signal(true);
   readonly showNav = signal(true);
   private readonly realtime = inject(RealtimeService);

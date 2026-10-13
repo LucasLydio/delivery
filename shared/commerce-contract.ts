@@ -50,6 +50,20 @@ export interface CatalogProduct {
   optionGroups: ProductOptionGroup[];
 }
 
+export interface CatalogCategory {
+  id: string;
+  slug: string;
+  name: string;
+  sortOrder: number;
+  availableProductCount: number;
+}
+
+export interface CategorySnapshot {
+  version: string;
+  fetchedAt: string;
+  categories: CatalogCategory[];
+}
+
 /** The cached copy is used for instant previews; version changes invalidate its prices. */
 export interface CatalogSnapshot {
   version: string;

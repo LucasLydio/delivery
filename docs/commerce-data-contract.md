@@ -14,6 +14,8 @@ The TypeScript wire types are in [`shared/commerce-contract.ts`](../shared/comme
 
 | Request | Response or purpose |
 | --- | --- |
+| `GET /api/categories` | Catalog-versioned category list with available product counts |
+| `GET /api/categories/:id` | One category by its stable opaque ID |
 | `GET /api/products` | `CatalogSnapshot` (or paged equivalent), with `ETag` based on `version` |
 | `GET /api/products/:id` | `CatalogProduct`, including option groups and images |
 | `GET /api/me`, `PATCH /api/me` | `Customer` profile |

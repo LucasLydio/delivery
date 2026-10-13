@@ -2,13 +2,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import request from "supertest";
 import { createApp } from "../../app";
+import { createProductStorage } from "../../config/storage";
 import { ProductsService } from "./products.service";
 import { MemoryCache, MemoryProductsRepository } from "./products.fixtures";
 
 function setup() {
   const repository = new MemoryProductsRepository();
   const cache = new MemoryCache();
-  const productsService = new ProductsService(repository, cache, "BRL", "/images/products/", "api-test");
+  const storage = createProductStorage({
+    STORAGE_PROVIDER: "local", PRODUCT_IMAGE_BASE_URL: "/images/products/", LOCAL_PRODUCT_IMAGE_DIRECTORY: "public/images/products",
+  });
+  const productsService = new ProductsService(repository, cache, "BRL", storage, "api-test");
   return { repository, api: request(createApp({ productsService })) };
 }
 

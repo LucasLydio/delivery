@@ -1,18 +1,24 @@
 <section class="profile-page" aria-labelledby="profile-name">
-  <div class="profile-heading">
-    <div class="avatar" aria-hidden="true">{{ initials() }}<span>✓</span></div>
-    <h1 id="profile-name">{{ profile.profile().name }}</h1>
-    <p>{{ profile.profile().email }}</p>
-  </div>
+  @if (auth.customer(); as customer) {
+    <div class="profile-heading">
+      <div class="avatar" aria-hidden="true">{{ initials() }}<span>✓</span></div>
+      <h1 id="profile-name">{{ customer.name }}</h1>
+      <p>{{ customer.email || customer.phone }}</p>
+    </div>
 
-  <nav class="profile-menu" aria-label="Configurações da conta">
-    <a routerLink="/profile/edit"><span class="menu-icon" aria-hidden="true">♙</span><span>Dados pessoais</span><span aria-hidden="true">›</span></a>
-    <a routerLink="/orders"><span class="menu-icon" aria-hidden="true">▤</span><span>Meus pedidos</span><span aria-hidden="true">›</span></a>
-    <a routerLink="/addresses"><span class="menu-icon" aria-hidden="true">⌖</span><span>Endereços</span><span aria-hidden="true">›</span></a>
-    <a routerLink="/payments"><span class="menu-icon" aria-hidden="true">▱</span><span>Formas de pagamento</span><span aria-hidden="true">›</span></a>
-    <a routerLink="/settings"><span class="menu-icon" aria-hidden="true">⚙</span><span>Configurações</span><span aria-hidden="true">›</span></a>
-    <a routerLink="/support"><span class="menu-icon" aria-hidden="true">?</span><span>Ajuda e suporte</span><span aria-hidden="true">›</span></a>
-  </nav>
+    <nav class="profile-menu" aria-label="Configurações da conta">
+      <a routerLink="/profile/edit"><span class="menu-icon" aria-hidden="true">♙</span><span>Dados pessoais</span><span aria-hidden="true">›</span></a>
+      <a routerLink="/orders"><span class="menu-icon" aria-hidden="true">▤</span><span>Meus pedidos</span><span aria-hidden="true">›</span></a>
+      <a routerLink="/addresses"><span class="menu-icon" aria-hidden="true">⌖</span><span>Endereços</span><span aria-hidden="true">›</span></a>
+      <a routerLink="/payments"><span class="menu-icon" aria-hidden="true">▱</span><span>Formas de pagamento</span><span aria-hidden="true">›</span></a>
+      <a routerLink="/settings"><span class="menu-icon" aria-hidden="true">⚙</span><span>Configurações</span><span aria-hidden="true">›</span></a>
+      <a routerLink="/support"><span class="menu-icon" aria-hidden="true">?</span><span>Ajuda e suporte</span><span aria-hidden="true">›</span></a>
+    </nav>
 
-  <button class="logout-button" type="button"><span aria-hidden="true">↪</span> Sair</button>
+    @if (error()) { <p class="logout-error" role="alert">{{ error() }}</p> }
+    <button class="logout-button" type="button" [disabled]="loggingOut()" (click)="logout()">
+      <span aria-hidden="true">↪</span> {{ loggingOut() ? 'Saindo…' : 'Sair' }}
+    </button>
+  }
 </section>
+

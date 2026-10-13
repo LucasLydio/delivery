@@ -2,13 +2,8 @@ import type { Request, Response } from "express";
 import { BadRequestException, NotFoundException } from "../../shared/exceptions";
 import { apiResponse } from "../../shared/response";
 import { normalizeSearch, searchCacheSegment } from "../../utils/search";
+import { matchesEtag, revalidateHeaders } from "../../utils/http-cache";
 import type { ProductsService } from "./products.service";
-
-const revalidateHeaders = { "cache-control": "public, max-age=0, must-revalidate" };
-
-function matchesEtag(request: Request, etag: string): boolean {
-  return request.headers["if-none-match"]?.split(",").some((tag) => tag.trim() === etag) ?? false;
-}
 
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
