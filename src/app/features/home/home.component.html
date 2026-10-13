@@ -6,73 +6,45 @@
   </div>
 
   <div class="search-row">
-    <label class="menu-search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg>
-      <span class="sr-only">Buscar no cardápio</span>
-      <input type="search" placeholder="O que você quer comer?" [ngModel]="query()" (ngModelChange)="query.set($event)">
-    </label>
-    <button class="filter-button" type="button" aria-label="Filtrar cardápio">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6" /></svg>
-    </button>
+    <label class="menu-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg><span class="sr-only">Buscar no cardápio</span><input type="search" placeholder="O que você quer comer?" [ngModel]="query()" (ngModelChange)="query.set($event)"></label>
   </div>
 
-  <div class="category-list" aria-label="Categorias do cardápio">
-    @for (option of categories(); track option.id) {
-      <button type="button" class="category" [class.category--active]="category() === option.id" [attr.aria-pressed]="category() === option.id" (click)="category.set(option.id)">
-        <span class="category__icon" aria-hidden="true">{{ option.id === 'all' ? '✦' : option.id === 'bowls' ? '🥢' : option.id === 'pizza' ? '◒' : '≋' }}</span>
-        <span>{{ option.label }}</span>
-      </button>
-    }
-  </div>
-
-  <article class="featured-card">
-    <div class="featured-card__copy">
-      <span>DESTAQUES DA SEMANA</span>
-      <h2>Mais sabor para o seu dia.</h2>
-      <a routerLink="/product/pizza">Conheça os favoritos <span aria-hidden="true">→</span></a>
+  @if (catalog.categories().length) {
+    <div class="category-list" aria-label="Categorias do cardápio">
+      <button type="button" class="category" [class.category--active]="category() === 'all'" [attr.aria-pressed]="category() === 'all'" (click)="category.set('all')"><span class="category__icon" aria-hidden="true">T</span><span>Todas</span></button>
+      @for (option of catalog.categories(); track option.id) {
+        <button type="button" class="category" [class.category--active]="category() === option.id" [attr.aria-pressed]="category() === option.id" (click)="category.set(option.id)"><span class="category__icon" aria-hidden="true">{{ option.name.charAt(0) }}</span><span>{{ option.name }}</span></button>
+      }
     </div>
-    @if (config.config().menu[1]; as featured) {
-      <div class="featured-card__dish"><app-dish-image [item]="featured" /></div>
-    }
-  </article>
+  } @else if (catalog.loading()) {
+    <div class="category-skeleton" aria-hidden="true">@for (item of [1,2,3,4]; track item) { <span></span> }</div>
+  }
 
-  <div class="section-title">
-    <div><p>NOSSO CARDÁPIO</p><h2>Os mais pedidos</h2></div>
-    <span>{{ visibleMenu().length }} {{ visibleMenu().length === 1 ? 'prato' : 'pratos' }}</span>
-  </div>
+  @if (catalog.usingCachedData() && catalog.offline()) { <p class="offline-banner" role="status">Você está sem internet. Exibindo o cardápio salvo neste dispositivo.</p> }
 
-  @if (!config.loaded()) {
-    <p class="menu-state" role="status">Carregando o cardápio…</p>
+  @if (featured(); as featuredProduct) {
+    <article class="featured-card"><div class="featured-card__copy"><span>DESTAQUE DO CARDÁPIO</span><h2>{{ featuredProduct.name }}</h2><a [routerLink]="['/product', featuredProduct.id]">Conheça este prato <span aria-hidden="true">→</span></a></div><div class="featured-card__dish"><app-dish-image [item]="featuredProduct" /></div></article>
+  } @else if (catalog.loading()) { <div class="featured-skeleton skeleton" aria-hidden="true"></div> }
+
+  <div class="section-title"><div><p>NOSSO CARDÁPIO</p><h2>Escolha o seu favorito</h2></div>@if (catalog.loaded()) { <span>{{ visibleMenu().length }} {{ visibleMenu().length === 1 ? 'prato' : 'pratos' }}</span> }</div>
+
+  @if (catalog.loading() && !catalog.products().length) {
+    <div class="product-grid" aria-label="Carregando cardápio" aria-busy="true">
+      @for (item of [1,2,3,4]; track item) { <article class="product-card product-card--skeleton" aria-hidden="true"><div class="skeleton skeleton-image"></div><div class="product-card__body"><span class="skeleton skeleton-line skeleton-line--title"></span><span class="skeleton skeleton-line"></span><span class="skeleton skeleton-line skeleton-line--short"></span></div></article> }
+    </div>
+  } @else if (catalog.offline() && !catalog.products().length) {
+    <section class="catalog-state" aria-labelledby="offline-title"><img src="/images/offline.webp" alt="Ilustração de um celular sem conexão" width="1024" height="1024"><h2 id="offline-title">Você está sem internet</h2><p>Conecte-se para carregar o cardápio pela primeira vez.</p><button class="button button--dark" type="button" (click)="catalog.retry()">Tentar novamente</button></section>
+  } @else if (catalog.error() && !catalog.products().length) {
+    <section class="catalog-state" aria-labelledby="error-title"><img src="/images/products/product-placeholder.webp" alt="Ilustração de uma refeição" width="1024" height="1024"><h2 id="error-title">Cardápio indisponível</h2><p>{{ catalog.error() }}</p><button class="button button--dark" type="button" (click)="catalog.retry()">Tentar novamente</button></section>
   } @else {
     <div class="product-grid">
       @for (item of visibleMenu(); track item.id) {
-        <article class="product-card">
-          <a class="product-card__image" [routerLink]="['/product', item.id]" [style.background]="item.color" [attr.aria-label]="'Ver ' + item.name">
-            <app-dish-image [item]="item" />
-            @if (item.tag) { <span class="product-card__tag">{{ item.tag }}</span> }
-          </a>
-          <div class="product-card__body">
-            <a [routerLink]="['/product', item.id]"><h3>{{ item.name }}</h3></a>
-            <p>{{ item.description }}</p>
-            <div class="product-card__footer">
-              <strong>{{ formatPrice(item.price) }}</strong>
-              <button type="button" class="add-button" [attr.aria-label]="'Adicionar ' + item.name + ' ao carrinho'" (click)="add(item)">
-                @if (cart.quantity(item.id) > 0) { <span>{{ cart.quantity(item.id) }}</span> } @else { <span aria-hidden="true">+</span> }
-              </button>
-            </div>
-          </div>
-        </article>
+        <article class="product-card"><a class="product-card__image" [routerLink]="['/product', item.id]" [attr.aria-label]="'Ver ' + item.name"><app-dish-image [item]="item" /></a><div class="product-card__body"><a [routerLink]="['/product', item.id]"><h3>{{ item.name }}</h3></a><p>{{ item.description }}</p><div class="product-card__footer"><strong>{{ formatPrice(item.basePriceMinor) }}</strong><button type="button" class="add-button" [attr.aria-label]="'Adicionar ' + item.name + ' ao carrinho'" (click)="add(item)">@if (cart.quantity(item.id) > 0) { <span>{{ cart.quantity(item.id) }}</span> } @else { <span aria-hidden="true">+</span> }</button></div></div></article>
       } @empty {
-        <p class="menu-state">Nenhum prato encontrado. Tente outra busca ou categoria.</p>
+        <section class="catalog-state catalog-state--compact"><img src="/images/products/product-placeholder.webp" alt="Ilustração de uma refeição" width="1024" height="1024"><h2>Nenhum prato encontrado</h2><p>Tente outra busca ou escolha uma categoria diferente.</p>@if (query() || category() !== 'all') { <button class="text-button" type="button" (click)="query.set(''); category.set('all')">Limpar filtros</button> }</section>
       }
     </div>
   }
 
-  @if (cart.count() > 0) {
-    <a class="cart-peek" routerLink="/cart" aria-label="Abrir carrinho">
-      <span class="cart-peek__count">{{ cart.count() }}</span>
-      <span><strong>Ver carrinho</strong><small>Seu pedido está esperando</small></span>
-      <strong>{{ formatPrice(cart.subtotal()) }}</strong>
-    </a>
-  }
+  @if (cart.count() > 0) { <a class="cart-peek" routerLink="/cart" aria-label="Abrir carrinho"><span class="cart-peek__count">{{ cart.count() }}</span><span><strong>Ver carrinho</strong><small>Seu pedido está esperando</small></span><strong>{{ formatPrice(cart.subtotalMinor()) }}</strong></a> }
 </section>

@@ -11,6 +11,8 @@
   command = "npm run start"
   targetPort = 4200
   port = 8888
+  publish = "dev-static"
+  framework = "#custom"
 
 [[redirects]]
   from = "/api/order-events"
@@ -23,11 +25,6 @@
   to = "/.netlify/functions/api/:splat"
   status = 200
   force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 
 [[headers]]
   for = "/ngsw-worker.js"

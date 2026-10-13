@@ -1,22 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import type { BrandConfig } from '../../../shared/commerce-contract';
 
-export interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  category: string;
-  emoji: string;
-  color: string;
-  tag?: string;
-  imagePosition?: string;
-}
-
 export interface PublicAppConfig extends BrandConfig {
-  /** Demo catalog until the products API and its local cache are implemented. */
-  menu: MenuItem[];
 }
 
 const fallback: PublicAppConfig = {
@@ -26,7 +11,6 @@ const fallback: PublicAppConfig = {
   currency: 'BRL',
   locale: 'pt-BR',
   realtimeUrl: null,
-  menu: [],
 };
 
 @Injectable({ providedIn: 'root' })
@@ -39,7 +23,7 @@ export class AppConfigService {
       const response = await fetch('/app-config.json', { cache: 'no-store' });
       if (!response.ok) throw new Error('Configuration unavailable');
       const value = await response.json() as Partial<PublicAppConfig>;
-      if (typeof value.brandName !== 'string' || !Array.isArray(value.menu)) throw new Error('Invalid configuration');
+      if (typeof value.brandName !== 'string') throw new Error('Invalid configuration');
       const next = { ...fallback, ...value };
       this.config.set(next);
       document.title = `${next.brandName} · ${next.tagline}`;

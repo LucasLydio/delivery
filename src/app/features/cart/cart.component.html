@@ -10,8 +10,8 @@
       <h2 id="items-title">Itens</h2>
       @for (line of cart.lines(); track line.item.id) {
         <article class="cart-line">
-          <div class="cart-line__image" [style.background]="line.item.color"><app-dish-image [item]="line.item" /></div>
-          <div class="cart-line__copy"><strong>{{ line.item.name }}</strong><small>{{ line.item.category }}</small><button type="button" (click)="cart.remove(line.item.id)">Remover</button></div>
+          <div class="cart-line__image"><app-dish-image [item]="line.item" /></div>
+          <div class="cart-line__copy"><strong>{{ line.item.name }}</strong><small>{{ line.item.categoryName }}</small><button type="button" (click)="cart.remove(line.item.id)">Remover</button></div>
           <div class="line-price"><strong>{{ formatPrice(line.total) }}</strong><div class="stepper"><button type="button" [attr.aria-label]="'Remover uma unidade de ' + line.item.name" (click)="cart.decrement(line.item.id)">−</button><span>{{ line.quantity }}</span><button type="button" [attr.aria-label]="'Adicionar uma unidade de ' + line.item.name" (click)="cart.add(line.item.id)">+</button></div></div>
         </article>
       }

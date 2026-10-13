@@ -11,6 +11,10 @@ Use Node.js 22.12+ (this workspace was built with 22.22.2).
 3. Run `npm run dev:netlify`. Open `http://localhost:8888` for the Angular app and `/api/*` Functions.
 4. Run `npm run build` and `npm run typecheck:backend` before deployment.
 
+Netlify Dev proxies the Angular server through an empty `dev-static` publish directory. The SPA
+fallback lives in `public/_redirects`, so it is copied into production builds without rewriting the
+virtual JavaScript, CSS, and image assets served by Angular during local development.
+
 The UI and `GET /api/health` work without a database. The category and product routes read the migrated catalog tables; Redis is optional and catalog reads fall back to PostgreSQL when it is unavailable. `GET /api/state/latest` returns a null state until snapshots exist. The snapshot route is public in this starter, so store only public state. Customer login, refresh, and private address routes require PostgreSQL and `AUTH_TOKEN_SECRET`. Addresses support an optional validated geolocation pin. Push registration requires PostgreSQL plus a public VAPID key.
 
 ## Deploy to Netlify
@@ -25,6 +29,8 @@ Set `AUTH_TOKEN_SECRET` to a unique random value of at least 32 characters in ea
 
 The Angular authentication client restores the session from the refresh cookie during startup, keeps the short-lived access token only in memory, and attaches it through an HTTP interceptor. Concurrent `401` responses share one refresh request before retrying with the rotated access token. `/cart`, `/orders`, `/addresses`, `/payments`, `/profile`, and `/profile/edit` preserve their requested URL while redirecting anonymous users to `/login`. Profile edits use `PATCH /api/me`; logout revokes the refresh session before local account state is cleared.
 
+The storefront reads products, product details, and categories from the public catalog API. It stores the latest successful catalog snapshot locally for immediate cart estimates and offline browsing. Prices remain integer minor units until display. The catalog interface includes skeleton, empty, unavailable, and offline states.
+
 Authenticated cart routes persist product selections with optimistic revisions and reprice them from PostgreSQL before checkout. `CART_DELIVERY_FEE_MINOR` defaults to zero and `CART_QUOTE_TTL_SECONDS` defaults to 300 seconds. The Angular demo cart remains local until its login flow can supply an access token; when connected, batch changes after the documented 500 ms debounce.
 
 Checkout supports Pix and tokenized cards through Mercado Pago, pay on delivery, and pay at the store. Configure `SHOP_LATITUDE`, `SHOP_LONGITUDE`, `LIMIT_KM`, `FEE_PER_KM`, and `MERCADO_PAGO_FEE_PERCENT`; the `DeliveryPricingSetting` row with ID `main` overrides the distance limit and per-kilometer fee. Set `MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_PUBLIC_KEY`, and `MERCADO_PAGO_WEBHOOK_SECRET` in Netlify. Redis is required for checkout locks. The browser sends a unique `X-Idempotency-Key` for each checkout intent and sends only a Mercado Pago one-time card token, never raw card data.
@@ -35,9 +41,7 @@ Do not run production migrations automatically during a normal site build. Revie
 
 ## White label settings
 
-Edit `public/app-config.json` to change the brand name, accent, currency, locale, temporary sample menu, and WebSocket gateway URL. The [commerce data contract](docs/commerce-data-contract.md) defines the future catalog API and cached cart preview; the sample menu will move out of this file when that API is built. Edit `public/manifest.webmanifest` and `src/index.html` for the installed app name and metadata. Regenerate or replace the PNG icons in `public/icons/` for the new brand. Components and API routes do not contain customer branding.
-
-Menu items are illustrative local data. The basket is a UI preview and deliberately has no checkout action.
+Edit `public/app-config.json` to change the brand name, accent, currency, locale, and realtime URL. Product and category content comes from PostgreSQL through the catalog API. Edit `public/manifest.webmanifest` and `src/index.html` for the installed app name and metadata. Regenerate or replace the PNG icons in `public/icons/` for the new brand. Components and API routes do not contain customer branding.
 
 ## UI routes
 
@@ -47,7 +51,7 @@ Menu items are illustrative local data. The basket is a UI preview and deliberat
 - `/profile` — customer account menu.
 - `/profile/edit` — validated personal information form saved on this device.
 
-The generated transparent food sheet is `public/images/menu-dishes.png`. Product quadrant positions live in `public/app-config.json`, so replacement brands can supply another four-item sheet or replace the image component with catalog URLs later.
+Product images use URLs produced by the selected local or Supabase storage adapter. Missing and failed images use `public/images/products/product-placeholder.webp`.
 
 Backend tests: `npm run test:backend` automatically discovers fast tests named `*.spec.ts`. `npm run test:backend:db` discovers database tests named `*.db.test.ts` and runs them against **local PostgreSQL only**; each database test must isolate and clean up its own state. These commands are separate from Angular's `npm test`.
 
@@ -61,8 +65,8 @@ Test installation and background push on real iPhone and Android devices before 
 
 ## Structure
 
-- `src/app/features/home`: initial page and component-owned menu state.
-- `src/app/core`: public brand config, API calls, realtime lifecycle, push subscription.
+- `src/app/features/home`: catalog page, local filters, and request state presentation.
+- `src/app/core`: public brand config, catalog cache, authentication, API calls, realtime lifecycle, and push subscription.
 - `src/app/shared`: install action.
 - `backend/app.ts`: Express configuration and global middleware.
 - `backend/routes.ts`: composition root that imports every module router.

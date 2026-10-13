@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppConfigService } from '../../core/app-config';
 import { CartService } from '../../core/cart.service';
+import { CatalogService } from '../../core/catalog.service';
 import { DishImageComponent } from '../../shared/dish-image.component';
 
 @Component({
@@ -11,11 +12,14 @@ import { DishImageComponent } from '../../shared/dish-image.component';
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css',
 })
-export class CartComponent {
+export class CartComponent implements OnInit {
   readonly cart = inject(CartService);
   readonly config = inject(AppConfigService);
+  private readonly catalog = inject(CatalogService);
   readonly cutlery = signal(0);
   readonly checkoutMessage = signal<string | null>(null);
+
+  ngOnInit(): void { void this.catalog.load(); }
 
   addCutlery(): void { this.cutlery.update(value => value + 1); }
   removeCutlery(): void { this.cutlery.update(value => Math.max(0, value - 1)); }
