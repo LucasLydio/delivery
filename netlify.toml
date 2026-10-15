@@ -3,6 +3,11 @@
   publish = "dist/delivery/browser"
   functions = "netlify/functions"
 
+[build.environment]
+  # This committed file contains development examples and documented placeholders.
+  # Keep secret scanning enabled for source code, functions, and generated build files.
+  SECRETS_SCAN_OMIT_PATHS = ".env.example"
+
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["express"]
