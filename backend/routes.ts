@@ -36,6 +36,12 @@ import { SystemController } from "./modules/system/system.controller";
 import { PrismaSystemRepository } from "./modules/system/system.repository";
 import { createSystemRoutes } from "./modules/system/system.routes";
 import { SystemService } from "./modules/system/system.service";
+import { UsersController } from "./modules/users/users.controller";
+import { ScryptPasswordHasher } from "./modules/users/users.password";
+import { PrismaUsersRepository } from "./modules/users/users.repository";
+import { createUsersRoutes } from "./modules/users/users.routes";
+import { UsersService } from "./modules/users/users.service";
+import { UserTokenService } from "./modules/users/users.tokens";
 
 export interface RouteDependencies {
   addressesService?: AddressesService;
@@ -46,6 +52,7 @@ export interface RouteDependencies {
   ordersService?: OrdersService;
   pushService?: PushService;
   systemService?: SystemService;
+  usersService?: UsersService;
 }
 
 export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
@@ -83,6 +90,17 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
     config.DATABASE_URL ? new PrismaSystemRepository() : null,
     config.VAPID_PUBLIC_KEY,
   );
+  const usersService = dependencies.usersService ?? new UsersService(
+    new PrismaUsersRepository(),
+    new ScryptPasswordHasher(),
+    new UserTokenService(
+      config.ADMIN_AUTH_TOKEN_SECRET ?? config.AUTH_TOKEN_SECRET,
+      config.AUTH_TOKEN_ISSUER,
+      config.ADMIN_AUTH_TOKEN_AUDIENCE,
+      config.ADMIN_AUTH_ACCESS_TOKEN_TTL_SECONDS,
+    ),
+    config.ADMIN_AUTH_REFRESH_TOKEN_TTL_DAYS,
+  );
 
   const router = Router();
   router.use(createSystemRoutes(new SystemController(systemService)));
@@ -100,5 +118,10 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
   router.use("/webhooks", createOrdersWebhookRoutes(new MercadoPagoWebhookController(ordersService, config.MERCADO_PAGO_WEBHOOK_SECRET)));
   router.use("/products", createProductsRoutes(new ProductsController(productsService)));
   router.use("/push", createPushRoutes(new PushController(pushService)));
+  router.use("/admin", createUsersRoutes(new UsersController(
+    usersService,
+    config.ADMIN_AUTH_REFRESH_COOKIE_NAME,
+    config.ADMIN_AUTH_REFRESH_TOKEN_TTL_DAYS,
+  )));
   return router;
 }

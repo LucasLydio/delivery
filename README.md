@@ -8,12 +8,18 @@ Use Node.js 22.12+ (this workspace was built with 22.22.2).
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env`. To use the local database, start `docker compose up -d`, then run `npm run prisma:migrate:dev` to apply the committed migrations.
-3. Run `npm run dev:netlify`. Open `http://localhost:8888` for the Angular app and `/api/*` Functions.
-4. Run `npm run build` and `npm run typecheck:backend` before deployment.
+3. Run `npm run dev` for normal development. Open `http://localhost:4200`; Angular proxies
+   `/api/*` to the local Express server on port `3000`.
+4. Run `npm run dev:netlify` when checking the main API through Netlify Functions. Open only
+   `http://localhost:8888`; port `4200` bypasses the Netlify proxy.
+5. Run `npm run dev:netlify:full` when testing SSE or scheduled Functions, and run
+   `npm run smoke:dev` in another terminal to verify the active Netlify API boundary.
+6. Run `npm run build` and `npm run typecheck:backend` before deployment.
 
-Netlify Dev proxies the Angular server through an empty `dev-static` publish directory. The SPA
-fallback lives in `public/_redirects`, so it is copied into production builds without rewriting the
-virtual JavaScript, CSS, and image assets served by Angular during local development.
+Netlify Dev proxies the Angular server through an empty `dev-static` publish directory. Its launcher
+temporarily hides the generated production `_redirects` file because Netlify CLI otherwise applies
+the SPA fallback to Angular's virtual assets and `/api` routes. The API-only command bundles one
+Function to reduce local CPU use; the full command loads all production Functions.
 
 The UI and `GET /api/health` work without a database. The category and product routes read the migrated catalog tables; Redis is optional and catalog reads fall back to PostgreSQL when it is unavailable. `GET /api/state/latest` returns a null state until snapshots exist. The snapshot route is public in this starter, so store only public state. Customer login, refresh, and private address routes require PostgreSQL and `AUTH_TOKEN_SECRET`. Addresses support an optional validated geolocation pin. Push registration requires PostgreSQL plus a public VAPID key.
 

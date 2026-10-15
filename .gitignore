@@ -3,6 +3,7 @@
 #doc
 IMPLEMENTATION_PLAN.md
 BACKEND.md
+vapid.json
 
 # Compiled output
 /dist

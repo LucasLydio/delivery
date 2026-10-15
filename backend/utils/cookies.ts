@@ -14,13 +14,14 @@ export function readCookie(header: string | undefined, name: string): string | n
 interface CookieOptions {
   expires?: Date;
   maxAgeSeconds?: number;
+  path?: string;
   secure: boolean;
 }
 
 export function serializeHttpOnlyCookie(name: string, value: string, options: CookieOptions): string {
   const parts = [
     `${name}=${encodeURIComponent(value)}`,
-    "Path=/api/auth",
+    `Path=${options.path ?? "/api/auth"}`,
     "HttpOnly",
     "SameSite=Strict",
   ];
