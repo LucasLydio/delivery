@@ -7,6 +7,9 @@
   # This committed file contains development examples and documented placeholders.
   # Keep secret scanning enabled for source code, functions, and generated build files.
   SECRETS_SCAN_OMIT_PATHS = ".env.example"
+  # These values are public paths, identifiers, numeric settings, or local-only
+  # configuration. They are intentionally present in source code and tests.
+  SECRETS_SCAN_OMIT_KEYS = "LOCAL_PRODUCT_IMAGE_DIRECTORY,PRODUCT_IMAGE_BASE_URL,STORAGE_PROVIDER,FEE_PER_KM,DEV_API_PORT,AUTH_REFRESH_COOKIE_NAME,MERCADO_PAGO_API_URL,AUTH_TOKEN_AUDIENCE,MERCADO_PAGO_FEE_PERCENT,CHECKOUT_LOCK_TTL_MS"
 
 [functions]
   node_bundler = "esbuild"
