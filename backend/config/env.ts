@@ -44,11 +44,13 @@ const runtimeSchema = z.object({
 export function getRuntimeConfig() {
   const parsed = runtimeSchema.safeParse(process.env);
   if (!parsed.success) {
-    console.error("Invalid backend environment variables", parsed.error.issues.map((issue) => ({
+    const issues = parsed.error.issues.map((issue) => ({
       key: issue.path.join("."),
       message: issue.message,
-    })));
-    throw new Error("Invalid backend environment configuration");
+    }));
+    console.error("Invalid backend environment variables", issues);
+    const summary = issues.map((issue) => `${issue.key}: ${issue.message}`).join("; ");
+    throw new Error(`Invalid backend environment configuration (${summary})`);
   }
   return parsed.data;
 }

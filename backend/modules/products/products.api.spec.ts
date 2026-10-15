@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import request from "supertest";
 import { createApp } from "../../app";
+import { getAllowedOrigins } from "../../config/env";
 import { createProductStorage } from "../../config/storage";
+import { SystemService } from "../system/system.service";
 import { ProductsService } from "./products.service";
 import { MemoryCache, MemoryProductsRepository } from "./products.fixtures";
 
@@ -13,7 +15,8 @@ function setup() {
     STORAGE_PROVIDER: "local", PRODUCT_IMAGE_BASE_URL: "/images/products/", LOCAL_PRODUCT_IMAGE_DIRECTORY: "public/images/products",
   });
   const productsService = new ProductsService(repository, cache, "BRL", storage, "api-test");
-  return { repository, api: request(createApp({ productsService })) };
+  const systemService = new SystemService(null, undefined);
+  return { repository, api: request(createApp({ productsService, systemService })) };
 }
 
 test("GET /api/products returns a catalog snapshot and supports conditional requests", async () => {
@@ -57,9 +60,11 @@ test("GET /api/products/:id returns options, caches details, and reports bad or 
 
 test("Express applies global health, not-found, CORS, request ID, and OPTIONS behavior", async () => {
   const { api } = setup();
+  const allowedOrigin = [...getAllowedOrigins()][0];
+  assert.ok(allowedOrigin);
   await api.get("/api/health").expect(200, { status: "ok" }).expect("x-request-id", /.+/);
   await api.get("/api/config/push-key").expect(200, { enabled: false, publicKey: null });
   await api.get("/api/unknown").expect(404, { error: "Not found" });
-  await api.options("/api/products").set("origin", "http://localhost:4200").expect(204).expect("access-control-allow-origin", "http://localhost:4200");
+  await api.options("/api/products").set("origin", allowedOrigin).expect(204).expect("access-control-allow-origin", allowedOrigin);
   await api.get("/api/health").set("origin", "https://blocked.example").expect(403, { error: "Origin not allowed" });
 });
