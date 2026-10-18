@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 const commands = [
   {
     name: 'backend',
-    args: ['--env-file=.env', '--import', 'tsx', 'backend/dev.ts'],
+    args: ['--env-file=.env.dev', '--import', 'tsx', 'backend/dev.ts'],
   },
   {
     name: 'frontend',
