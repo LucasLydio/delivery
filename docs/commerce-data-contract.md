@@ -12,29 +12,29 @@ The TypeScript wire types are in [`shared/commerce-contract.ts`](../shared/comme
 
 ## Proposed API exchange for the next steps
 
-| Request | Response or purpose |
-| --- | --- |
-| `GET /api/categories` | Catalog-versioned category list with available product counts |
-| `GET /api/categories/:id` | One category by its stable opaque ID |
-| `GET /api/products` | `CatalogSnapshot` (or paged equivalent), with `ETag` based on `version` |
-| `GET /api/products/:id` | `CatalogProduct`, including option groups and images |
-| `GET /api/me`, `PATCH /api/me` | `Customer` profile |
-| `POST /api/auth/login` | Find or create a customer using normalized name and Brazilian mobile phone; issue an access token and HttpOnly refresh cookie |
-| `POST /api/auth/refresh`, `DELETE /api/auth/logout` | Rotate or revoke the first-party refresh session |
-| `GET /api/me/addresses`, `POST /api/me/addresses` | List or create authenticated customer addresses |
-| `PATCH /api/me/addresses/:id`, `DELETE /api/me/addresses/:id` | Update or delete only an address owned by the authenticated customer |
-| `PATCH /api/me/addresses/:id/default` | Atomically select the customer's only default address |
-| `GET /api/cart` | Authenticated customer's `CartDraft`, or an empty draft |
-| `PUT /api/cart` | Replace the complete authenticated cart using its expected revision |
-| `DELETE /api/cart` | Remove the authenticated customer's server cart |
-| `POST /api/cart/quote` | Reprice the synchronized cart from current product and option records |
-| `POST /api/checkout/quote` | Authoritative quote using the current cart, location, payment method, and optional coupon |
-| `POST /api/checkout` | Idempotent order creation; requires `X-Idempotency-Key` |
-| `GET /api/orders?limit=:limit&cursor=:cursor` | Authenticated cursor-paginated order history with `items` and `nextCursor` |
-| `GET /api/orders/:id` | Authenticated order details |
-| `GET /api/orders/events?after=:cursor` | Catch up persisted order notifications |
-| `GET /api/orders/:orderId` | Authenticated order catch-up used only by the active tracking page |
-| `POST /api/webhooks/mercado-pago` | Signed Mercado Pago Order reconciliation |
+| Request                                                       | Response or purpose                                                                                                           |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/categories`                                         | Catalog-versioned category list with available product counts                                                                 |
+| `GET /api/categories/:id`                                     | One category by its stable opaque ID                                                                                          |
+| `GET /api/products`                                           | `CatalogSnapshot` (or paged equivalent), with `ETag` based on `version`                                                       |
+| `GET /api/products/:id`                                       | `CatalogProduct`, including option groups and images                                                                          |
+| `GET /api/me`, `PATCH /api/me`                                | `Customer` profile                                                                                                            |
+| `POST /api/auth/login`                                        | Find or create a customer using normalized name and Brazilian mobile phone; issue an access token and HttpOnly refresh cookie |
+| `POST /api/auth/refresh`, `DELETE /api/auth/logout`           | Rotate or revoke the first-party refresh session                                                                              |
+| `GET /api/me/addresses`, `POST /api/me/addresses`             | List or create authenticated customer addresses                                                                               |
+| `PATCH /api/me/addresses/:id`, `DELETE /api/me/addresses/:id` | Update or delete only an address owned by the authenticated customer                                                          |
+| `PATCH /api/me/addresses/:id/default`                         | Atomically select the customer's only default address                                                                         |
+| `GET /api/cart`                                               | Authenticated customer's `CartDraft`, or an empty draft                                                                       |
+| `PUT /api/cart`                                               | Replace the complete authenticated cart using its expected revision                                                           |
+| `DELETE /api/cart`                                            | Remove the authenticated customer's server cart                                                                               |
+| `POST /api/cart/quote`                                        | Reprice the synchronized cart from current product and option records                                                         |
+| `POST /api/checkout/quote`                                    | Authoritative quote using the current cart, location, payment method, and optional coupon                                     |
+| `POST /api/checkout`                                          | Idempotent order creation; requires `X-Idempotency-Key`                                                                       |
+| `GET /api/orders?limit=:limit&cursor=:cursor`                 | Authenticated cursor-paginated order history with `items` and `nextCursor`                                                    |
+| `GET /api/orders/:id`                                         | Authenticated order details                                                                                                   |
+| `GET /api/orders/events?after=:cursor`                        | Catch up persisted order notifications                                                                                        |
+| `GET /api/orders/:orderId`                                    | Authenticated order catch-up used only by the active tracking page                                                            |
+| `POST /api/webhooks/mercado-pago`                             | Signed Mercado Pago Order reconciliation                                                                                      |
 
 ## Cached cart preview
 

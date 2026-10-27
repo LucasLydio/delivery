@@ -1,0 +1,96 @@
+<section class="catalog-page" aria-labelledby="categories-title">
+  <header class="page-header">
+    <div>
+      <p>CATÁLOGO</p>
+      <h1 id="categories-title">Categorias</h1>
+      <span>{{ activeCount() }} ativas de {{ categories().length }}</span>
+    </div>
+  </header>
+
+  <form class="editor-card" [formGroup]="form" (ngSubmit)="save()">
+    <div class="editor-heading">
+      <div>
+        <h2>{{ editingId() ? 'Editar categoria' : 'Nova categoria' }}</h2>
+        <p>Organize como os produtos aparecem no cardápio.</p>
+      </div>
+    </div>
+    <label
+      ><span>Nome</span
+      ><input
+        formControlName="name"
+        maxlength="120"
+        placeholder="Ex.: Executivos"
+        autocomplete="off"
+    /></label>
+    <label class="order-field"
+      ><span>Ordem</span
+      ><input formControlName="sortOrder" type="number" min="0" max="100000" inputmode="numeric"
+    /></label>
+    <div class="form-actions">
+      @if (editingId()) {
+        <button class="secondary" type="button" (click)="cancelEdit()">Cancelar</button>
+      }
+      <button class="primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Salvando…' : editingId() ? 'Salvar alterações' : 'Criar categoria' }}
+      </button>
+    </div>
+  </form>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <div class="error" role="alert">
+      <span>{{ error() }}</span
+      ><button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="category-list" aria-label="Carregando categorias">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="category-row skeleton"></div>
+      }
+    </div>
+  } @else if (!categories().length) {
+    <div class="empty-state">
+      <h2>Seu cardápio ainda não tem categorias</h2>
+      <p>Crie a primeira categoria usando o formulário acima.</p>
+    </div>
+  } @else {
+    <div class="category-list">
+      @for (category of categories(); track category.id) {
+        <article class="category-row" [class.disabled]="!category.available">
+          <div class="category-main">
+            <span class="category-order">{{ category.sortOrder }}</span>
+            <div>
+              <h2>{{ category.name }}</h2>
+              <p>
+                {{ category.availableProductCount }} produto(s) disponível(is) ·
+                <span>{{ category.available ? 'Ativa' : 'Desativada' }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="secondary" (click)="edit(category)">Editar</button
+            ><button
+              type="button"
+              class="toggle"
+              [class.enable]="!category.available"
+              [disabled]="updatingId() === category.id"
+              (click)="toggle(category)"
+            >
+              {{
+                updatingId() === category.id
+                  ? 'Aguarde…'
+                  : category.available
+                    ? 'Desativar'
+                    : 'Reativar'
+              }}
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

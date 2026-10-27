@@ -1,0 +1,223 @@
+<section class="editor-page" aria-labelledby="editor-title">
+  <header class="page-header">
+    <div>
+      <a routerLink="/admin/products">← Voltar para produtos</a>
+      <h1 id="editor-title">{{ productId ? 'Editar produto' : 'Novo produto' }}</h1>
+      <p>
+        {{
+          productId
+            ? 'Atualize as informações e os adicionais deste item.'
+            : 'Cadastre as informações básicas; as opções serão adicionadas depois.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <div class="error" role="alert">
+      <span>{{ error() }}</span>
+      @if (loading()) {
+        <button type="button" (click)="load()">Tentar novamente</button>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="main-card skeleton" aria-label="Carregando produto"></div>
+  } @else {
+    <form class="main-card" [formGroup]="productForm" (ngSubmit)="saveProduct()">
+      <div class="card-heading">
+        <div>
+          <span>INFORMAÇÕES</span>
+          <h2>Dados do produto</h2>
+        </div>
+        @if (product()) {
+          <span class="status" [class.off]="!product()!.available">{{
+            product()!.available ? 'Ativo' : 'Desativado'
+          }}</span>
+        }
+      </div>
+      <div class="form-grid">
+        <label class="wide"
+          ><span>Nome</span
+          ><input
+            formControlName="name"
+            maxlength="120"
+            placeholder="Ex.: Filé de frango executivo"
+        /></label>
+        <label class="wide"
+          ><span>Descrição</span
+          ><textarea
+            formControlName="description"
+            maxlength="1000"
+            rows="4"
+            placeholder="Descreva o prato e seus acompanhamentos"
+          ></textarea>
+        </label>
+        <label
+          ><span>Categoria</span
+          ><select formControlName="categoryId">
+            <option value="" disabled>Selecione</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">
+                {{ category.name }}{{ category.available ? '' : ' (desativada)' }}
+              </option>
+            }
+          </select></label
+        >
+        <label
+          ><span>Preço (R$)</span
+          ><input formControlName="price" inputmode="decimal" placeholder="29,90"
+        /></label>
+        <label
+          ><span>Ordem</span
+          ><input
+            formControlName="sortOrder"
+            type="number"
+            min="0"
+            max="100000"
+            inputmode="numeric"
+        /></label>
+      </div>
+      <footer>
+        <a routerLink="/admin/products">Cancelar</a
+        ><button type="submit" [disabled]="saving()">
+          {{ saving() ? 'Salvando…' : productId ? 'Salvar alterações' : 'Criar produto' }}
+        </button>
+      </footer>
+    </form>
+
+    @if (product(); as currentProduct) {
+      <section class="options-section" aria-labelledby="options-title">
+        <header>
+          <div>
+            <span>PERSONALIZAÇÃO</span>
+            <h2 id="options-title">Grupos e opções</h2>
+            <p>Ex.: “Escolha o acompanhamento” com opções como arroz e salada.</p>
+          </div>
+          <button type="button" (click)="newGroup()">+ Novo grupo</button>
+        </header>
+
+        @if (editingGroupId()) {
+          <form class="inline-form" [formGroup]="groupForm" (ngSubmit)="saveGroup()">
+            <h3>{{ editingGroupId() === 'new' ? 'Novo grupo' : 'Editar grupo' }}</h3>
+            <label class="wide"
+              ><span>Nome</span
+              ><input formControlName="name" placeholder="Ex.: Escolha até 2 acompanhamentos"
+            /></label>
+            <label
+              ><span>Mínimo</span
+              ><input formControlName="minSelections" type="number" min="0" max="20"
+            /></label>
+            <label
+              ><span>Máximo</span
+              ><input formControlName="maxSelections" type="number" min="1" max="20"
+            /></label>
+            <label
+              ><span>Ordem</span><input formControlName="sortOrder" type="number" min="0"
+            /></label>
+            <div class="inline-actions">
+              <button type="button" class="secondary" (click)="cancelGroup()">Cancelar</button
+              ><button type="submit" [disabled]="saving()">Salvar grupo</button>
+            </div>
+          </form>
+        }
+
+        @if (!currentProduct.optionGroups.length && !editingGroupId()) {
+          <div class="empty-state">
+            <h3>Nenhum grupo de opções</h3>
+            <p>O produto pode ser vendido sem adicionais ou você pode criar um grupo agora.</p>
+          </div>
+        }
+
+        <div class="group-list">
+          @for (group of currentProduct.optionGroups; track group.id) {
+            <article class="group-card">
+              <header>
+                <div>
+                  <h3>{{ group.name }}</h3>
+                  <p>
+                    Escolha mínima: {{ group.minSelections }} · máxima: {{ group.maxSelections }}
+                  </p>
+                </div>
+                <div class="group-actions">
+                  <button type="button" class="secondary" (click)="editGroup(group)">
+                    Editar grupo</button
+                  ><button type="button" (click)="newOption(group.id)">+ Opção</button>
+                </div>
+              </header>
+
+              @if (optionGroupId() === group.id) {
+                <form
+                  class="inline-form option-form"
+                  [formGroup]="optionForm"
+                  (ngSubmit)="saveOption()"
+                >
+                  <h3>{{ editingOptionId() === 'new' ? 'Nova opção' : 'Editar opção' }}</h3>
+                  <label class="wide"
+                    ><span>Nome</span><input formControlName="name" placeholder="Ex.: Batata frita"
+                  /></label>
+                  <label
+                    ><span>Adicional (R$)</span
+                    ><input formControlName="price" inputmode="decimal" placeholder="0,00"
+                  /></label>
+                  <label
+                    ><span>Ordem</span><input formControlName="sortOrder" type="number" min="0"
+                  /></label>
+                  <div class="inline-actions">
+                    <button type="button" class="secondary" (click)="cancelOption()">
+                      Cancelar</button
+                    ><button type="submit" [disabled]="saving()">Salvar opção</button>
+                  </div>
+                </form>
+              }
+
+              @if (!group.options.length) {
+                <p class="no-options">Ainda não há opções neste grupo.</p>
+              }
+              <ul class="option-list">
+                @for (option of group.options; track option.id) {
+                  <li [class.disabled]="!option.available">
+                    <div>
+                      <strong>{{ option.name }}</strong
+                      ><span
+                        >{{
+                          option.priceDeltaMinor
+                            ? '+' +
+                              (option.priceDeltaMinor / 100
+                                | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR')
+                            : 'Sem acréscimo'
+                        }}
+                        · {{ option.available ? 'Ativa' : 'Desativada' }}</span
+                      >
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        class="secondary"
+                        (click)="editOption(group.id, option)"
+                      >
+                        Editar</button
+                      ><button
+                        type="button"
+                        class="danger"
+                        [class.enable]="!option.available"
+                        [disabled]="saving()"
+                        (click)="toggleOption(option)"
+                      >
+                        {{ option.available ? 'Desativar' : 'Reativar' }}
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        </div>
+      </section>
+    }
+  }
+</section>

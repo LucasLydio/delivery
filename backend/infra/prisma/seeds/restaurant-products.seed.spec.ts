@@ -1,11 +1,12 @@
-import assert from "node:assert/strict";
-import { test } from "node:test";
-import { restaurantCategories, restaurantProducts } from "./restaurant-products.seed";
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { restaurantCategories, restaurantProducts } from './restaurant-products.seed';
 
-test("restaurant seed defines three categories with five valid products each", () => {
-  assert.deepEqual(restaurantCategories.map((category) => category.slug), [
-    "executivos", "bebidas", "acompanhamentos",
-  ]);
+test('restaurant seed defines three categories with five valid products each', () => {
+  assert.deepEqual(
+    restaurantCategories.map((category) => category.slug),
+    ['executivos', 'bebidas', 'acompanhamentos'],
+  );
 
   const slugs = new Set<string>();
   for (const category of restaurantCategories) {

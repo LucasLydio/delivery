@@ -1,4 +1,10 @@
-import { AddressLimitError, type AddressPatch, type AddressRecord, type AddressesRepository, type AddressWrite } from "./addresses.repository";
+import {
+  AddressLimitError,
+  type AddressPatch,
+  type AddressRecord,
+  type AddressesRepository,
+  type AddressWrite,
+} from './addresses.repository';
 
 export class MemoryAddressesRepository implements AddressesRepository {
   readonly rows: AddressRecord[] = [];
@@ -7,14 +13,26 @@ export class MemoryAddressesRepository implements AddressesRepository {
   async list(customerId: string): Promise<AddressRecord[]> {
     return this.rows
       .filter((row) => row.customerId === customerId)
-      .sort((left, right) => Number(right.isDefault) - Number(left.isDefault) || left.createdAt.getTime() - right.createdAt.getTime());
+      .sort(
+        (left, right) =>
+          Number(right.isDefault) - Number(left.isDefault) ||
+          left.createdAt.getTime() - right.createdAt.getTime(),
+      );
   }
 
-  async create(customerId: string, input: AddressWrite, makeDefault: boolean, maximum = 10): Promise<AddressRecord> {
+  async create(
+    customerId: string,
+    input: AddressWrite,
+    makeDefault: boolean,
+    maximum = 10,
+  ): Promise<AddressRecord> {
     const customerRows = this.rows.filter((row) => row.customerId === customerId);
     if (customerRows.length >= maximum) throw new AddressLimitError();
     const isDefault = makeDefault || customerRows.length === 0;
-    if (isDefault) customerRows.forEach((row) => { row.isDefault = false; });
+    if (isDefault)
+      customerRows.forEach((row) => {
+        row.isDefault = false;
+      });
     const now = new Date(Date.UTC(2026, 9, 12, 12, this.sequence));
     const row: AddressRecord = {
       id: `address-${++this.sequence}`,
@@ -36,7 +54,11 @@ export class MemoryAddressesRepository implements AddressesRepository {
     return row;
   }
 
-  async update(customerId: string, addressId: string, input: AddressPatch): Promise<AddressRecord | null> {
+  async update(
+    customerId: string,
+    addressId: string,
+    input: AddressPatch,
+  ): Promise<AddressRecord | null> {
     const row = this.rows.find((item) => item.id === addressId && item.customerId === customerId);
     if (!row) return null;
     Object.assign(row, input, { updatedAt: new Date() });
@@ -46,12 +68,18 @@ export class MemoryAddressesRepository implements AddressesRepository {
   async setDefault(customerId: string, addressId: string): Promise<AddressRecord | null> {
     const row = this.rows.find((item) => item.id === addressId && item.customerId === customerId);
     if (!row) return null;
-    this.rows.filter((item) => item.customerId === customerId).forEach((item) => { item.isDefault = item.id === addressId; });
+    this.rows
+      .filter((item) => item.customerId === customerId)
+      .forEach((item) => {
+        item.isDefault = item.id === addressId;
+      });
     return row;
   }
 
   async delete(customerId: string, addressId: string): Promise<boolean> {
-    const index = this.rows.findIndex((item) => item.id === addressId && item.customerId === customerId);
+    const index = this.rows.findIndex(
+      (item) => item.id === addressId && item.customerId === customerId,
+    );
     if (index < 0) return false;
     const [deleted] = this.rows.splice(index, 1);
     if (deleted.isDefault) {

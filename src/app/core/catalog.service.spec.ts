@@ -5,16 +5,31 @@ import type { CatalogSnapshot, CategorySnapshot } from '../../../shared/commerce
 import { CatalogService } from './catalog.service';
 
 const catalog: CatalogSnapshot = {
-  version: '2', fetchedAt: '2026-10-13T00:00:00.000Z', currency: 'BRL',
-  products: [{
-    id: 'product-1', slug: 'poke', name: 'Poke', description: 'Fresco',
-    categoryId: 'category-1', categoryName: 'Pratos', basePriceMinor: 2590,
-    currency: 'BRL', available: true, images: [], optionGroups: [],
-  }],
+  version: '2',
+  fetchedAt: '2026-10-13T00:00:00.000Z',
+  currency: 'BRL',
+  products: [
+    {
+      id: 'product-1',
+      slug: 'poke',
+      name: 'Poke',
+      description: 'Fresco',
+      categoryId: 'category-1',
+      categoryName: 'Pratos',
+      basePriceMinor: 2590,
+      currency: 'BRL',
+      available: true,
+      images: [],
+      optionGroups: [],
+    },
+  ],
 };
 const categories: CategorySnapshot = {
-  version: '2', fetchedAt: '2026-10-13T00:00:00.000Z',
-  categories: [{ id: 'category-1', slug: 'pratos', name: 'Pratos', sortOrder: 1, availableProductCount: 1 }],
+  version: '2',
+  fetchedAt: '2026-10-13T00:00:00.000Z',
+  categories: [
+    { id: 'category-1', slug: 'pratos', name: 'Pratos', sortOrder: 1, availableProductCount: 1 },
+  ],
 };
 
 describe('CatalogService', () => {
@@ -23,7 +38,9 @@ describe('CatalogService', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(CatalogService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -45,7 +62,9 @@ describe('CatalogService', () => {
   it('keeps the cached catalog when the network is unavailable', async () => {
     localStorage.setItem('delivery-catalog-v1', JSON.stringify(catalog));
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(CatalogService);
     http = TestBed.inject(HttpTestingController);
 

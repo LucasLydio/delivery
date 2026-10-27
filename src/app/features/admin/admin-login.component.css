@@ -1,0 +1,114 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--bg-light);
+}
+.admin-login {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 5rem 1rem 2rem;
+}
+.store-link {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  left: max(1rem, calc((100% - 34rem) / 2));
+  color: var(--color-medium);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.login-panel {
+  width: min(100%, 30rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xlg);
+  background: var(--bg-lighter);
+  box-shadow: var(--shadow-md);
+}
+.brand-mark {
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--brand-medium);
+  color: #fff;
+  font-size: 2rem;
+}
+.eyebrow {
+  margin: 1.4rem 0 0.4rem;
+  color: var(--brand-dark);
+  font-size: 0.67rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 7vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+}
+.intro {
+  margin: 0.8rem 0 1.5rem;
+  color: var(--color-light);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+.restoring {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-light);
+  color: var(--color-medium);
+}
+form {
+  display: grid;
+  gap: 0.55rem;
+}
+label {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--bg-light);
+  color: var(--color-dark);
+}
+input[aria-invalid='true'] {
+  border-color: #b23a32;
+}
+.field-error {
+  color: #a23d35;
+  font-size: 0.68rem;
+}
+.form-error {
+  margin: 0.7rem 0 0;
+  padding: 0.8rem;
+  border-radius: var(--radius-md);
+  background: #fff0ee;
+  color: #91392f;
+  font-size: 0.75rem;
+}
+button {
+  min-height: 3.4rem;
+  margin-top: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-dark);
+  color: var(--bg-lighter);
+  font-weight: 800;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.security-note {
+  margin: 1.2rem 0 0;
+  color: var(--color-light);
+  font-size: 0.68rem;
+  text-align: center;
+}

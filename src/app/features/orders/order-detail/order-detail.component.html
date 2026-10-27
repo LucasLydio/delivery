@@ -1,0 +1,44 @@
+<section class="order-detail" aria-labelledby="order-title">
+  <a class="back" routerLink="/orders" aria-label="Voltar para pedidos">‹</a>
+  @if (tracking.loading() && !tracking.order()) {
+    <div class="hero skeleton" aria-label="Carregando pedido"></div>
+  } @else if (tracking.order(); as order) {
+    <header class="hero">
+      <p>Pedido #{{ order.id.slice(-6).toUpperCase() }}</p>
+      <h1 id="order-title">{{ statusLabel(order.status) }}</h1>
+      <small>Realizado em {{ order.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</small>
+    </header>
+    @if (tracking.offline()) {
+      <p class="notice">Você está offline. Atualizaremos o pedido quando a conexão voltar.</p>
+    }
+    @if (tracking.error()) {
+      <p class="notice error" role="alert">
+        {{ tracking.error() }}
+        <button type="button" (click)="tracking.refresh()">Tentar agora</button>
+      </p>
+    }
+    <div class="panel">
+      <h2>Itens</h2>
+      @for (line of order.lines; track line.itemId) {
+        <div class="line">
+          <span>{{ line.quantity }}× {{ line.name }}</span
+          ><strong>{{
+            line.lineTotalMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+          }}</strong>
+        </div>
+      }
+      <div class="line total">
+        <span>Total</span
+        ><strong>{{
+          order.totalMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+        }}</strong>
+      </div>
+    </div>
+  } @else {
+    <div class="empty">
+      <h1 id="order-title">Pedido indisponível</h1>
+      <p>{{ tracking.error() }}</p>
+      <button type="button" (click)="tracking.refresh()">Tentar novamente</button>
+    </div>
+  }
+</section>

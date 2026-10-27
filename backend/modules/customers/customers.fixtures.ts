@@ -4,8 +4,8 @@ import type {
   CustomerSessionRecord,
   CustomerUpdate,
   NewCustomerSession,
-} from "./customers.repository";
-import { CustomerIdentityConflictError } from "./customers.repository";
+} from './customers.repository';
+import { CustomerIdentityConflictError } from './customers.repository';
 
 interface StoredSession extends NewCustomerSession {
   id: string;
@@ -35,8 +35,11 @@ export class MemoryCustomersRepository implements CustomersRepository {
 
   async update(id: string, input: CustomerUpdate): Promise<CustomerRecord> {
     const customer = this.customers.get(id);
-    if (!customer) throw new Error("Customer missing");
-    if (input.phone && [...this.customers.values()].some((item) => item.id !== id && item.phone === input.phone)) {
+    if (!customer) throw new Error('Customer missing');
+    if (
+      input.phone &&
+      [...this.customers.values()].some((item) => item.id !== id && item.phone === input.phone)
+    ) {
       throw new CustomerIdentityConflictError();
     }
     const updated = { ...customer, ...input };
@@ -57,7 +60,11 @@ export class MemoryCustomersRepository implements CustomersRepository {
     return { ...session, customer };
   }
 
-  async rotateSession(id: string, revokedAt: Date, replacement: NewCustomerSession): Promise<boolean> {
+  async rotateSession(
+    id: string,
+    revokedAt: Date,
+    replacement: NewCustomerSession,
+  ): Promise<boolean> {
     const current = [...this.sessions.values()].find((session) => session.id === id);
     if (!current || current.revokedAt || current.expiresAt <= revokedAt) return false;
     current.revokedAt = revokedAt;

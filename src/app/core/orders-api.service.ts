@@ -10,5 +10,7 @@ export class OrdersApiService {
     const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
     return firstValueFrom(this.http.get<OrderPage>(`/api/orders${query}`));
   }
-  get(id: string): Promise<OrderSummary> { return firstValueFrom(this.http.get<OrderSummary>(`/api/orders/${encodeURIComponent(id)}`)); }
+  get(id: string): Promise<OrderSummary> {
+    return firstValueFrom(this.http.get<OrderSummary>(`/api/orders/${encodeURIComponent(id)}`));
+  }
 }

@@ -20,7 +20,7 @@ const args = ['node_modules/netlify-cli/bin/run.js', 'dev', '--no-open'];
 if (mode === 'api') args.push('--functions', 'netlify/functions-local');
 
 const netlify = spawn(process.execPath, args, { stdio: 'inherit' });
-netlify.once('exit', code => {
+netlify.once('exit', (code) => {
   if (productionRedirect) writeFileSync(productionRedirectPath, productionRedirect);
   process.exitCode = code ?? 1;
 });

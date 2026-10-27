@@ -1,27 +1,27 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, type Prisma, type UserProfile } from "@prisma/client";
-import { Pool } from "pg";
-import { ScryptPasswordHasher } from "../../../modules/users/users.password";
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient, type Prisma, type UserProfile } from '@prisma/client';
+import { Pool } from 'pg';
+import { ScryptPasswordHasher } from '../../../modules/users/users.password';
 
 interface DemoUser {
   name: string;
   email: string;
   profile: UserProfile;
-  passwordEnvironmentKey: "DEMO_ADMIN_PASSWORD" | "DEMO_MANAGER_PASSWORD";
+  passwordEnvironmentKey: 'DEMO_ADMIN_PASSWORD' | 'DEMO_MANAGER_PASSWORD';
 }
 
 export const demoUsers: readonly DemoUser[] = [
   {
-    name: "Administrador Demonstração",
-    email: "admin@demonstracao.com.br",
-    profile: "ADMIN",
-    passwordEnvironmentKey: "DEMO_ADMIN_PASSWORD",
+    name: 'Administrador Demonstração',
+    email: 'admin@demonstracao.com.br',
+    profile: 'ADMIN',
+    passwordEnvironmentKey: 'DEMO_ADMIN_PASSWORD',
   },
   {
-    name: "Gerente Demonstração",
-    email: "gerente@demonstracao.com.br",
-    profile: "MANAGER",
-    passwordEnvironmentKey: "DEMO_MANAGER_PASSWORD",
+    name: 'Gerente Demonstração',
+    email: 'gerente@demonstracao.com.br',
+    profile: 'MANAGER',
+    passwordEnvironmentKey: 'DEMO_MANAGER_PASSWORD',
   },
 ];
 
@@ -42,11 +42,13 @@ export async function seedDemoUsers(
   passwords: ReadonlyMap<string, string>,
 ): Promise<void> {
   const passwordHasher = new ScryptPasswordHasher();
-  const usersWithHashes = await Promise.all(demoUsers.map(async (user) => {
-    const password = passwords.get(user.email);
-    if (!password) throw new Error(`Password missing for ${user.email}`);
-    return { ...user, passwordHash: await passwordHasher.hash(password) };
-  }));
+  const usersWithHashes = await Promise.all(
+    demoUsers.map(async (user) => {
+      const password = passwords.get(user.email);
+      if (!password) throw new Error(`Password missing for ${user.email}`);
+      return { ...user, passwordHash: await passwordHasher.hash(password) };
+    }),
+  );
 
   await client.$transaction(async (transaction: Prisma.TransactionClient) => {
     for (const { passwordEnvironmentKey: _passwordEnvironmentKey, ...user } of usersWithHashes) {
@@ -66,8 +68,9 @@ export async function seedDemoUsers(
 }
 
 async function main(): Promise<void> {
-  const connectionString = process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"];
-  if (!connectionString) throw new Error("DIRECT_URL or DATABASE_URL is required to seed demo users");
+  const connectionString = process.env['DIRECT_URL'] ?? process.env['DATABASE_URL'];
+  if (!connectionString)
+    throw new Error('DIRECT_URL or DATABASE_URL is required to seed demo users');
 
   const pool = new Pool({ connectionString, max: 1, connectionTimeoutMillis: 10_000 });
   const client = new PrismaClient({ adapter: new PrismaPg(pool) });
@@ -82,7 +85,10 @@ async function main(): Promise<void> {
 
 if (require.main === module) {
   main().catch((error: unknown) => {
-    console.error("Demo user seed failed", error instanceof Error ? error.message : "Unknown error");
+    console.error(
+      'Demo user seed failed',
+      error instanceof Error ? error.message : 'Unknown error',
+    );
     process.exitCode = 1;
   });
 }

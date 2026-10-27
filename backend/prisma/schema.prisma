@@ -40,12 +40,14 @@ model Category {
   id        String    @id @default(cuid())
   slug      String    @unique
   name      String
+  available Boolean   @default(true)
   sortOrder Int       @default(0) @map("sort_order")
   products  Product[]
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@index([sortOrder])
+  @@index([available, sortOrder])
   @@map("categories")
 }
 
@@ -273,6 +275,10 @@ enum OrderStatus {
   DRAFT
   PAYMENT_PENDING
   CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
   PAYMENT_FAILED
   CANCELLED
 }

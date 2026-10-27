@@ -1,0 +1,17 @@
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+@media (max-width: 700px) {
+  .admin-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-nav a {
+    justify-content: center;
+    padding: 0.7rem 0.25rem;
+  }
+}

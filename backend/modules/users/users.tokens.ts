@@ -1,10 +1,16 @@
-import { randomBytes, randomUUID } from "node:crypto";
-import { jwtVerify, SignJWT } from "jose";
-import { ServiceUnavailableException, UnauthorizedException } from "../../shared/exceptions";
-import type { UserProfile } from "./users.schema";
+import { randomBytes, randomUUID } from 'node:crypto';
+import { jwtVerify, SignJWT } from 'jose';
+import { ServiceUnavailableException, UnauthorizedException } from '../../shared/exceptions';
+import type { UserProfile } from './users.schema';
 
-export interface UserPrincipal { id: string; profile: UserProfile }
-export interface UserAccessToken { value: string; expiresAt: Date }
+export interface UserPrincipal {
+  id: string;
+  profile: UserProfile;
+}
+export interface UserAccessToken {
+  value: string;
+  expiresAt: Date;
+}
 
 export class UserTokenService {
   constructor(
@@ -18,8 +24,8 @@ export class UserTokenService {
   async createAccessToken(principal: UserPrincipal): Promise<UserAccessToken> {
     const issuedAt = Math.floor(this.now().getTime() / 1000);
     const expiresAt = new Date((issuedAt + this.ttlSeconds) * 1000);
-    const value = await new SignJWT({ type: "admin_access", profile: principal.profile })
-      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    const value = await new SignJWT({ type: 'admin_access', profile: principal.profile })
+      .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
       .setSubject(principal.id)
       .setIssuer(this.issuer)
       .setAudience(this.audience)
@@ -33,24 +39,32 @@ export class UserTokenService {
   async verifyAccessToken(token: string): Promise<UserPrincipal> {
     try {
       const { payload, protectedHeader } = await jwtVerify(token, this.requireSecret(), {
-        algorithms: ["HS256"], issuer: this.issuer, audience: this.audience, currentDate: this.now(),
+        algorithms: ['HS256'],
+        issuer: this.issuer,
+        audience: this.audience,
+        currentDate: this.now(),
       });
       if (
-        protectedHeader.typ !== "JWT" || payload.type !== "admin_access" ||
-        typeof payload.sub !== "string" || (payload.profile !== "ADMIN" && payload.profile !== "MANAGER")
-      ) throw new Error("Invalid claims");
+        protectedHeader.typ !== 'JWT' ||
+        payload.type !== 'admin_access' ||
+        typeof payload.sub !== 'string' ||
+        (payload.profile !== 'ADMIN' && payload.profile !== 'MANAGER')
+      )
+        throw new Error('Invalid claims');
       return { id: payload.sub, profile: payload.profile };
     } catch (error) {
       if (error instanceof ServiceUnavailableException) throw error;
-      throw new UnauthorizedException("Token de acesso inválido ou expirado");
+      throw new UnauthorizedException('Token de acesso inválido ou expirado');
     }
   }
 
-  createRefreshToken(): string { return randomBytes(32).toString("base64url"); }
+  createRefreshToken(): string {
+    return randomBytes(32).toString('base64url');
+  }
 
   private requireSecret(): Uint8Array {
-    if (!this.secret || Buffer.byteLength(this.secret, "utf8") < 32) {
-      throw new ServiceUnavailableException("A autenticação administrativa não está configurada");
+    if (!this.secret || Buffer.byteLength(this.secret, 'utf8') < 32) {
+      throw new ServiceUnavailableException('A autenticação administrativa não está configurada');
     }
     return new TextEncoder().encode(this.secret);
   }

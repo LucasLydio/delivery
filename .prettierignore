@@ -1,0 +1,7 @@
+dist
+node_modules
+coverage
+.angular
+backend/prisma/migrations
+package-lock.json
+public/images

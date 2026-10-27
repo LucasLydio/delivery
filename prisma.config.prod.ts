@@ -1,3 +1,3 @@
-import { createPrismaConfig } from "./prisma.config.shared";
+import { createPrismaConfig } from './prisma.config.shared';
 
-export default createPrismaConfig("production");
+export default createPrismaConfig('production');

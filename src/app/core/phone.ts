@@ -7,4 +7,3 @@ export function formatBrazilianPhoneInput(value: string): string {
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits[2]} ${digits.slice(3)}`;
   return `(${digits.slice(0, 2)}) ${digits[2]} ${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
-

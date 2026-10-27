@@ -1,8 +1,13 @@
 <section class="checkout-page" aria-labelledby="checkout-title">
   <div class="checkout-heading">
     <a class="back-link" routerLink="/" aria-label="Voltar ao cardápio">←</a>
-    <div><p>ENTREGA EM 24 A 35 MIN</p><h1 id="checkout-title">Seu pedido</h1></div>
-    @if (cart.count() > 0) { <button type="button" class="clear-button" (click)="cart.clear()">Limpar</button> }
+    <div>
+      <p>ENTREGA EM 24 A 35 MIN</p>
+      <h1 id="checkout-title">Seu pedido</h1>
+    </div>
+    @if (cart.count() > 0) {
+      <button type="button" class="clear-button" (click)="cart.clear()">Limpar</button>
+    }
   </div>
 
   @if (cart.count() > 0) {
@@ -11,38 +16,109 @@
       @for (line of cart.lines(); track line.item.id) {
         <article class="cart-line">
           <div class="cart-line__image"><app-dish-image [item]="line.item" /></div>
-          <div class="cart-line__copy"><strong>{{ line.item.name }}</strong><small>{{ line.item.categoryName }}</small><button type="button" (click)="cart.remove(line.item.id)">Remover</button></div>
-          <div class="line-price"><strong>{{ formatPrice(line.total) }}</strong><div class="stepper"><button type="button" [attr.aria-label]="'Remover uma unidade de ' + line.item.name" (click)="cart.decrement(line.item.id)">−</button><span>{{ line.quantity }}</span><button type="button" [attr.aria-label]="'Adicionar uma unidade de ' + line.item.name" (click)="cart.add(line.item.id)">+</button></div></div>
+          <div class="cart-line__copy">
+            <strong>{{ line.item.name }}</strong
+            ><small>{{ line.item.categoryName }}</small
+            ><button type="button" (click)="cart.remove(line.item.id)">Remover</button>
+          </div>
+          <div class="line-price">
+            <strong>{{ formatPrice(line.total) }}</strong>
+            <div class="stepper">
+              <button
+                type="button"
+                [attr.aria-label]="'Remover uma unidade de ' + line.item.name"
+                (click)="cart.decrement(line.item.id)"
+              >
+                −</button
+              ><span>{{ line.quantity }}</span
+              ><button
+                type="button"
+                [attr.aria-label]="'Adicionar uma unidade de ' + line.item.name"
+                (click)="cart.add(line.item.id)"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </article>
       }
-      <div class="cart-line cutlery-line"><span class="cutlery-icon" aria-hidden="true">♜</span><div class="cart-line__copy"><strong>Talheres</strong><small>Peça apenas o necessário</small></div><div class="stepper"><button type="button" aria-label="Remover talher" (click)="removeCutlery()">−</button><span>{{ cutlery() }}</span><button type="button" aria-label="Adicionar talher" (click)="addCutlery()">+</button></div></div>
+      <div class="cart-line cutlery-line">
+        <span class="cutlery-icon" aria-hidden="true">♜</span>
+        <div class="cart-line__copy">
+          <strong>Talheres</strong><small>Peça apenas o necessário</small>
+        </div>
+        <div class="stepper">
+          <button type="button" aria-label="Remover talher" (click)="removeCutlery()">−</button
+          ><span>{{ cutlery() }}</span
+          ><button type="button" aria-label="Adicionar talher" (click)="addCutlery()">+</button>
+        </div>
+      </div>
     </section>
 
     @if (cart.preview().needsReview) {
-      <p class="checkout-message" role="alert">Alguns itens precisam ser atualizados. Recarregue o cardápio antes de continuar.</p>
+      <p class="checkout-message" role="alert">
+        Alguns itens precisam ser atualizados. Recarregue o cardápio antes de continuar.
+      </p>
     }
 
     <section class="checkout-card address-card" aria-labelledby="address-title">
-      <div><span class="section-icon" aria-hidden="true">⌖</span><div><h2 id="address-title">Endereço de entrega</h2><p>Escolha onde deseja receber seu pedido.</p></div></div>
+      <div>
+        <span class="section-icon" aria-hidden="true">⌖</span>
+        <div>
+          <h2 id="address-title">Endereço de entrega</h2>
+          <p>Escolha onde deseja receber seu pedido.</p>
+        </div>
+      </div>
       <a routerLink="/addresses">Escolher</a>
     </section>
 
     <section class="checkout-card payment-card" aria-labelledby="payment-title">
       <h2 id="payment-title">Forma de pagamento</h2>
-      <button type="button"><span class="payment-mark" aria-hidden="true">●</span><span><strong>Pagamento na entrega</strong><small>Cartão ou dinheiro na sua porta</small></span><span aria-hidden="true">›</span></button>
+      <button type="button">
+        <span class="payment-mark" aria-hidden="true">●</span
+        ><span
+          ><strong>Pagamento na entrega</strong><small>Cartão ou dinheiro na sua porta</small></span
+        ><span aria-hidden="true">›</span>
+      </button>
     </section>
 
     <section class="totals" aria-label="Resumo do pedido">
-      <div><span>{{ cart.preview().needsReview ? 'Subtotal dos itens disponíveis' : 'Subtotal' }}</span><strong>{{ formatPrice(cart.subtotal()) }}</strong></div>
+      <div>
+        <span>{{ cart.preview().needsReview ? 'Subtotal dos itens disponíveis' : 'Subtotal' }}</span
+        ><strong>{{ formatPrice(cart.subtotal()) }}</strong>
+      </div>
       <div><span>Entrega</span><strong>A calcular</strong></div>
       @if (!cart.preview().needsReview) {
-        <div class="grand-total"><span>Estimativa dos itens</span><strong>{{ formatPrice(cart.subtotal()) }}</strong></div>
+        <div class="grand-total">
+          <span>Estimativa dos itens</span><strong>{{ formatPrice(cart.subtotal()) }}</strong>
+        </div>
       }
     </section>
 
-    <button class="checkout-button" type="button" [disabled]="cart.preview().needsReview" (click)="checkout()"><span>Revisar pedido</span><span>24 a 35 min · {{ formatPrice(cart.subtotal()) }}</span></button>
-    @if (checkoutMessage()) { <p class="checkout-message" role="status">{{ checkoutMessage() }}</p> }
+    <button
+      class="checkout-button"
+      type="button"
+      [disabled]="cart.preview().needsReview"
+      (click)="checkout()"
+    >
+      <span>Revisar pedido</span><span>24 a 35 min · {{ formatPrice(cart.subtotal()) }}</span>
+    </button>
+    @if (checkoutMessage()) {
+      <p class="checkout-message" role="status">{{ checkoutMessage() }}</p>
+    }
   } @else {
-    <div class="empty-cart"><img src="/images/order-placeholder.webp" alt="Ilustração de um pedido com a mensagem: Faça um pedido!" width="1024" height="1024" decoding="async" style="opacity: 0.7;"><h2>Seu carrinho está vazio</h2><p>Escolha algo gostoso no cardápio para começar.</p><a class="button button--dark" routerLink="/">Ver cardápio</a></div>
+    <div class="empty-cart">
+      <img
+        src="/images/order-placeholder.webp"
+        alt="Ilustração de um pedido com a mensagem: Faça um pedido!"
+        width="1024"
+        height="1024"
+        decoding="async"
+        style="opacity: 0.7"
+      />
+      <h2>Seu carrinho está vazio</h2>
+      <p>Escolha algo gostoso no cardápio para começar.</p>
+      <a class="button button--dark" routerLink="/">Ver cardápio</a>
+    </div>
   }
 </section>

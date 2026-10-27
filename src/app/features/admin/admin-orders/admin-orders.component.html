@@ -1,0 +1,128 @@
+<section class="orders-board" aria-labelledby="admin-orders-title">
+  <header class="page-header">
+    <div>
+      <p class="section-kicker">OPERAÇÃO</p>
+      <h1 id="admin-orders-title">Pedidos recebidos</h1>
+      <p>Acompanhe e atualize o preparo sem recarregar toda a aplicação.</p>
+    </div>
+    <button
+      class="refresh-button"
+      type="button"
+      [disabled]="loading()"
+      (click)="load()"
+      aria-label="Atualizar pedidos"
+    >
+      ↻ Atualizar
+    </button>
+  </header>
+
+  <nav class="filters" aria-label="Filtrar pedidos">
+    @for (filter of filters; track filter.label) {
+      <button
+        type="button"
+        [class.active]="selectedStatus() === filter.status"
+        [attr.aria-pressed]="selectedStatus() === filter.status"
+        (click)="selectFilter(filter.status)"
+      >
+        {{ filter.label }}
+      </button>
+    }
+  </nav>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span>{{ error() }}</span
+      ><button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="order-grid" aria-label="Carregando pedidos">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <article class="order-card skeleton"></article>
+      }
+    </div>
+  } @else if (!hasOrders()) {
+    <div class="empty-state">
+      <img src="/images/order-placeholder.webp" alt="" width="260" height="260" />
+      <h2>Nenhum pedido nesta etapa</h2>
+      <p>Os pedidos aparecerão aqui assim que entrarem neste status.</p>
+      <button type="button" (click)="load()">Verificar novamente</button>
+    </div>
+  } @else {
+    <div class="order-grid">
+      @for (order of orders(); track order.id) {
+        <article class="order-card">
+          <header class="order-card__header">
+            <div>
+              <span class="order-number">Pedido #{{ shortId(order.id) }}</span
+              ><time [attr.datetime]="order.createdAt">{{
+                order.createdAt | date: 'dd/MM, HH:mm'
+              }}</time>
+            </div>
+            <span class="status-badge" [attr.data-status]="order.status">{{
+              statusLabel(order.status)
+            }}</span>
+          </header>
+
+          <div class="customer-block">
+            <strong>{{ order.customer?.name || 'Cliente não identificado' }}</strong>
+            @if (order.customer?.phone) {
+              <span>{{ order.customer?.phone }}</span>
+            }
+            <small>{{ addressLine(order) }}</small>
+          </div>
+
+          <ul class="order-lines" aria-label="Itens do pedido">
+            @for (line of order.lines; track line.itemId) {
+              <li>
+                <span
+                  ><b>{{ line.quantity }}×</b> {{ line.name }}</span
+                ><strong>{{
+                  line.lineTotalMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+                }}</strong>
+                @if (line.selectedOptions.length) {
+                  <small>{{ optionsLabel(line) }}</small>
+                }
+              </li>
+            }
+          </ul>
+
+          <dl class="order-summary">
+            <div>
+              <dt>Pagamento</dt>
+              <dd>{{ paymentLabel(order.paymentMethod) }}</dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd>{{ order.totalMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</dd>
+            </div>
+          </dl>
+
+          @if (nextActions(order.status).length) {
+            <footer class="order-actions">
+              @for (action of nextActions(order.status); track action.status) {
+                <button
+                  type="button"
+                  [class.secondary]="action.secondary"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order, action.status)"
+                >
+                  {{ updatingOrderId() === order.id ? 'Atualizando…' : action.label }}
+                </button>
+              }
+            </footer>
+          }
+        </article>
+      }
+    </div>
+    @if (nextCursor()) {
+      <button class="load-more" type="button" [disabled]="loadingMore()" (click)="loadMore()">
+        {{ loadingMore() ? 'Carregando…' : 'Carregar mais' }}
+      </button>
+    }
+  }
+</section>

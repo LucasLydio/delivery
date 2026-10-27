@@ -1,0 +1,114 @@
+<section class="products-page" aria-labelledby="products-title">
+  <header class="page-header">
+    <div>
+      <p>CATÁLOGO</p>
+      <h1 id="products-title">Produtos</h1>
+      <span>Crie pratos, configure adicionais e controle o que aparece no cardápio.</span>
+    </div>
+    <a routerLink="/admin/products/new">+ Novo produto</a>
+  </header>
+
+  <div class="toolbar">
+    <label class="search"
+      ><span class="sr-only">Buscar produto</span
+      ><input
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        placeholder="Buscar por produto ou categoria"
+    /></label>
+    <label
+      ><span class="sr-only">Categoria</span
+      ><select [ngModel]="category()" (ngModelChange)="category.set($event)">
+        <option value="all">Todas as categorias</option>
+        @for (item of categories(); track item[0]) {
+          <option [value]="item[0]">{{ item[1] }}</option>
+        }
+      </select></label
+    >
+    <label
+      ><span class="sr-only">Disponibilidade</span
+      ><select [ngModel]="availability()" (ngModelChange)="availability.set($event)">
+        <option value="all">Todos</option>
+        <option value="active">Ativos</option>
+        <option value="disabled">Desativados</option>
+      </select></label
+    >
+  </div>
+
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <div class="error" role="alert">
+      <span>{{ error() }}</span
+      ><button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="product-list" aria-label="Carregando produtos">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="product-row skeleton"></div>
+      }
+    </div>
+  } @else if (!products().length) {
+    <div class="empty-state">
+      <img src="/images/menu-dishes.png" alt="" width="220" height="160" />
+      <h2>Nenhum produto cadastrado</h2>
+      <p>Adicione o primeiro item para começar a montar o cardápio.</p>
+      <a routerLink="/admin/products/new">Criar produto</a>
+    </div>
+  } @else if (!filteredProducts().length) {
+    <div class="empty-state">
+      <h2>Nenhum resultado</h2>
+      <p>Altere a busca ou os filtros para encontrar outros produtos.</p>
+    </div>
+  } @else {
+    <div class="table-heading" aria-hidden="true">
+      <span>Produto</span><span>Categoria</span><span>Preço</span><span>Status</span
+      ><span>Ações</span>
+    </div>
+    <div class="product-list">
+      @for (product of filteredProducts(); track product.id) {
+        <article class="product-row" [class.disabled]="!product.available">
+          <div class="product-main">
+            <img
+              [src]="imageUrl(product)"
+              [alt]="product.images[0]?.alt || ''"
+              width="54"
+              height="54"
+            />
+            <div>
+              <h2>{{ product.name }}</h2>
+              <p>{{ product.optionGroups.length }} grupo(s) de opções</p>
+            </div>
+          </div>
+          <span class="category">{{ product.categoryName }}</span>
+          <strong>{{
+            product.basePriceMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+          }}</strong>
+          <span class="status" [class.off]="!product.available">{{
+            product.available ? 'Ativo' : 'Desativado'
+          }}</span>
+          <div class="actions">
+            <a [routerLink]="['/admin/products', product.id]">Editar</a
+            ><button
+              type="button"
+              [class.enable]="!product.available"
+              [disabled]="updatingId() === product.id"
+              (click)="toggle(product)"
+            >
+              {{
+                updatingId() === product.id
+                  ? 'Aguarde…'
+                  : product.available
+                    ? 'Desativar'
+                    : 'Reativar'
+              }}
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

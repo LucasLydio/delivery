@@ -1,7 +1,7 @@
-import { ServiceUnavailableException } from "../shared/exceptions";
-import { getRuntimeConfig } from "./env";
+import { ServiceUnavailableException } from '../shared/exceptions';
+import { getRuntimeConfig } from './env';
 
-export type StorageProvider = "local" | "supabase";
+export type StorageProvider = 'local' | 'supabase';
 
 export interface ProductStorage {
   provider: StorageProvider;
@@ -20,26 +20,33 @@ export interface StorageEnvironment {
   SUPABASE_STORAGE_BUCKET?: string;
 }
 
-function trailingSlash(value: string): string { return value.endsWith("/") ? value : `${value}/`; }
+function trailingSlash(value: string): string {
+  return value.endsWith('/') ? value : `${value}/`;
+}
 
 function encodeStorageKey(storageKey: string): string {
-  const segments = storageKey.split("/");
-  if (!segments.length || segments.some((segment) => !segment || segment === "." || segment === ".." || segment.includes("\\"))) {
-    throw new Error("Invalid product storage key");
+  const segments = storageKey.split('/');
+  if (
+    !segments.length ||
+    segments.some(
+      (segment) => !segment || segment === '.' || segment === '..' || segment.includes('\\'),
+    )
+  ) {
+    throw new Error('Invalid product storage key');
   }
-  return segments.map(encodeURIComponent).join("/");
+  return segments.map(encodeURIComponent).join('/');
 }
 
 export function createProductStorage(environment: StorageEnvironment): ProductStorage {
-  if (environment.STORAGE_PROVIDER === "supabase") {
+  if (environment.STORAGE_PROVIDER === 'supabase') {
     if (!environment.SUPABASE_URL || !environment.SUPABASE_STORAGE_BUCKET) {
-      throw new ServiceUnavailableException("Supabase product storage is not configured");
+      throw new ServiceUnavailableException('Supabase product storage is not configured');
     }
-    const projectUrl = environment.SUPABASE_URL.replace(/\/+$/, "");
+    const projectUrl = environment.SUPABASE_URL.replace(/\/+$/, '');
     const bucket = environment.SUPABASE_STORAGE_BUCKET;
     const publicBaseUrl = `${projectUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/`;
     return {
-      provider: "supabase",
+      provider: 'supabase',
       publicBaseUrl,
       localDirectory: null,
       bucket,
@@ -49,7 +56,7 @@ export function createProductStorage(environment: StorageEnvironment): ProductSt
 
   const publicBaseUrl = trailingSlash(environment.PRODUCT_IMAGE_BASE_URL);
   return {
-    provider: "local",
+    provider: 'local',
     publicBaseUrl,
     localDirectory: environment.LOCAL_PRODUCT_IMAGE_DIRECTORY,
     bucket: null,
@@ -60,4 +67,3 @@ export function createProductStorage(environment: StorageEnvironment): ProductSt
 export function getProductStorage(): ProductStorage {
   return createProductStorage(getRuntimeConfig());
 }
-

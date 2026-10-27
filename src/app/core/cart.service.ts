@@ -19,25 +19,44 @@ export class CartService {
   private readonly quantities = signal<Record<string, number>>(this.readStoredCart());
   private readonly selectedOptions = signal<Record<string, string[]>>(this.readStoredOptions());
 
-  readonly count = computed(() => Object.values(this.quantities()).reduce((total, quantity) => total + quantity, 0));
-  private readonly activeCatalog = computed<CatalogSnapshot>(() => this.catalog.catalog() ?? ({
-    version: 'unavailable', fetchedAt: new Date(0).toISOString(),
-    currency: this.config.config().currency, products: [],
-  }));
+  readonly count = computed(() =>
+    Object.values(this.quantities()).reduce((total, quantity) => total + quantity, 0),
+  );
+  private readonly activeCatalog = computed<CatalogSnapshot>(
+    () =>
+      this.catalog.catalog() ?? {
+        version: 'unavailable',
+        fetchedAt: new Date(0).toISOString(),
+        currency: this.config.config().currency,
+        products: [],
+      },
+  );
   private readonly draft = computed<CartDraft>(() => ({
-    id: null, revision: null,
+    id: null,
+    revision: null,
     items: Object.entries(this.quantities()).map(([productId, quantity]) => ({
-      id: productId, productId, quantity, selectedOptionIds: this.selectedOptions()[productId] ?? [],
+      id: productId,
+      productId,
+      quantity,
+      selectedOptionIds: this.selectedOptions()[productId] ?? [],
     })),
   }));
   readonly preview = computed(() => calculateCartPreview(this.activeCatalog(), this.draft()));
   readonly lines = computed<CartLine[]>(() => {
-    const menu = new Map(this.catalog.products().map(item => [item.id, item]));
+    const menu = new Map(this.catalog.products().map((item) => [item.id, item]));
     const { currency, locale } = this.config.config();
-    return this.preview().lines.flatMap(line => {
+    return this.preview().lines.flatMap((line) => {
       const item = menu.get(line.productId);
-      return item ? [{ item, quantity: line.quantity, totalMinor: line.lineTotalMinor,
-        total: minorToMajor(line.lineTotalMinor, currency, locale) }] : [];
+      return item
+        ? [
+            {
+              item,
+              quantity: line.quantity,
+              totalMinor: line.lineTotalMinor,
+              total: minorToMajor(line.lineTotalMinor, currency, locale),
+            },
+          ]
+        : [];
     });
   });
   readonly subtotalMinor = computed(() => this.preview().subtotalMinor);
@@ -51,7 +70,8 @@ export class CartService {
   }
 
   add(itemId: string, amount = 1, selectedOptionIds?: string[]): void {
-    if (selectedOptionIds) this.selectedOptions.update(current => ({ ...current, [itemId]: selectedOptionIds }));
+    if (selectedOptionIds)
+      this.selectedOptions.update((current) => ({ ...current, [itemId]: selectedOptionIds }));
     this.set(itemId, this.quantity(itemId) + amount);
   }
 
@@ -60,7 +80,7 @@ export class CartService {
   }
 
   remove(itemId: string): void {
-    this.selectedOptions.update(current => {
+    this.selectedOptions.update((current) => {
       const next = { ...current };
       delete next[itemId];
       return next;
@@ -76,13 +96,13 @@ export class CartService {
 
   private set(itemId: string, quantity: number): void {
     if (quantity <= 0) {
-      this.selectedOptions.update(current => {
+      this.selectedOptions.update((current) => {
         const next = { ...current };
         delete next[itemId];
         return next;
       });
     }
-    this.quantities.update(current => {
+    this.quantities.update((current) => {
       const next = { ...current };
       if (quantity > 0) next[itemId] = Math.min(99, quantity);
       else delete next[itemId];
@@ -98,8 +118,15 @@ export class CartService {
 
   private readStoredCart(): Record<string, number> {
     try {
-      const parsed = JSON.parse(localStorage.getItem('delivery-cart') ?? '{}') as Record<string, unknown>;
-      return Object.fromEntries(Object.entries(parsed).filter(([, value]) => typeof value === 'number' && value > 0 && value <= 99)) as Record<string, number>;
+      const parsed = JSON.parse(localStorage.getItem('delivery-cart') ?? '{}') as Record<
+        string,
+        unknown
+      >;
+      return Object.fromEntries(
+        Object.entries(parsed).filter(
+          ([, value]) => typeof value === 'number' && value > 0 && value <= 99,
+        ),
+      ) as Record<string, number>;
     } catch {
       return {};
     }
@@ -107,9 +134,15 @@ export class CartService {
 
   private readStoredOptions(): Record<string, string[]> {
     try {
-      const parsed = JSON.parse(localStorage.getItem('delivery-cart-options') ?? '{}') as Record<string, unknown>;
-      return Object.fromEntries(Object.entries(parsed).filter(([, value]) =>
-        Array.isArray(value) && value.every(option => typeof option === 'string'))
+      const parsed = JSON.parse(localStorage.getItem('delivery-cart-options') ?? '{}') as Record<
+        string,
+        unknown
+      >;
+      return Object.fromEntries(
+        Object.entries(parsed).filter(
+          ([, value]) =>
+            Array.isArray(value) && value.every((option) => typeof option === 'string'),
+        ),
       ) as Record<string, string[]>;
     } catch {
       return {};

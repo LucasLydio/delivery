@@ -1,6 +1,6 @@
-import { getRuntimeConfig } from "../../config/env";
-import { PrismaMaintenanceRepository } from "./maintenance.repository";
-import { MaintenanceService } from "./maintenance.service";
+import { getRuntimeConfig } from '../../config/env';
+import { PrismaMaintenanceRepository } from './maintenance.repository';
+import { MaintenanceService } from './maintenance.service';
 
 export function createDefaultMaintenanceService(): MaintenanceService {
   const config = getRuntimeConfig();

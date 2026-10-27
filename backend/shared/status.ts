@@ -15,8 +15,8 @@ export const HttpStatus = {
 } as const;
 
 export const StatusMessage = {
-  OK: "ok",
-  CREATED: "created",
-  UPDATED: "updated",
-  DELETED: "deleted",
+  OK: 'ok',
+  CREATED: 'created',
+  UPDATED: 'updated',
+  DELETED: 'deleted',
 } as const;

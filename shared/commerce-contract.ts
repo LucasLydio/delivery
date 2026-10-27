@@ -171,10 +171,7 @@ export interface OrderDraft {
 }
 
 export type CheckoutPaymentMethod =
-  | 'MERCADO_PAGO_PIX'
-  | 'MERCADO_PAGO_CARD'
-  | 'PAY_ON_DELIVERY'
-  | 'PAY_AT_STORE';
+  'MERCADO_PAGO_PIX' | 'MERCADO_PAGO_CARD' | 'PAY_ON_DELIVERY' | 'PAY_AT_STORE';
 
 export interface CheckoutQuote extends CartQuote {
   paymentMethod: CheckoutPaymentMethod;
@@ -187,7 +184,15 @@ export interface CheckoutQuote extends CartQuote {
 
 export interface OrderSummary extends CheckoutQuote {
   id: string;
-  status: 'PAYMENT_PENDING' | 'CONFIRMED' | 'PAYMENT_FAILED' | 'CANCELLED';
+  status:
+    | 'PAYMENT_PENDING'
+    | 'CONFIRMED'
+    | 'PREPARING'
+    | 'READY'
+    | 'OUT_FOR_DELIVERY'
+    | 'COMPLETED'
+    | 'PAYMENT_FAILED'
+    | 'CANCELLED';
   paymentStatus: 'PENDING' | 'PAID' | 'ON_DELIVERY' | 'AT_STORE' | 'FAILED' | 'CANCELLED';
   mercadoPagoStatus: string | null;
   mercadoPagoOrderId: string | null;
@@ -195,6 +200,73 @@ export interface OrderSummary extends CheckoutQuote {
   createdAt: string;
   confirmedAt: string | null;
   cancelledAt: string | null;
+}
+
+export interface StaffUser {
+  id: string;
+  name: string;
+  email: string;
+  profile: 'ADMIN' | 'MANAGER';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StaffSession {
+  user: StaffUser;
+  accessToken: string;
+  accessTokenExpiresAt: string;
+}
+
+export interface AdminOrderSummary extends OrderSummary {
+  customer: {
+    id: string;
+    name: string;
+    phone: string | null;
+    email: string | null;
+  } | null;
+  deliveryAddress: Record<string, unknown> | null;
+}
+
+export interface AdminOrderPage {
+  items: AdminOrderSummary[];
+  nextCursor: string | null;
+}
+
+export interface AdminCategory {
+  id: string;
+  slug: string;
+  name: string;
+  available: boolean;
+  sortOrder: number;
+  availableProductCount: number;
+}
+
+export interface AdminProductOption extends ProductOption {
+  sortOrder: number;
+}
+
+export interface AdminProductOptionGroup {
+  id: string;
+  name: string;
+  minSelections: number;
+  maxSelections: number;
+  sortOrder: number;
+  options: AdminProductOption[];
+}
+
+export interface AdminProduct {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  categoryId: string;
+  categoryName: string;
+  basePriceMinor: MinorAmount;
+  currency: string;
+  available: boolean;
+  sortOrder: number;
+  images: ProductImage[];
+  optionGroups: AdminProductOptionGroup[];
 }
 
 export interface OrderPage {

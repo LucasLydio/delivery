@@ -1,9 +1,49 @@
 <section class="orders-page" aria-labelledby="orders-title">
-  <header><p class="eyebrow">Sua conta</p><h1 id="orders-title">Meus pedidos</h1></header>
-  @if (loading()) { <div class="order-list" aria-label="Carregando pedidos">@for (item of [1,2,3]; track item) { <div class="order-card skeleton"></div> }</div> }
-  @else if (error()) { <div class="empty-state" role="alert"><img src="/images/order-placeholder.webp" alt="" /><h2>Pedidos indisponíveis</h2><p>{{ error() }}</p><button type="button" (click)="load()">Tentar novamente</button></div> }
-  @else if (orders().length === 0) { <div class="empty-state"><img src="/images/order-placeholder.webp" alt="Ilustração de um pedido" /><h2>Faça seu primeiro pedido</h2><p>Seus pedidos aparecerão aqui.</p><a routerLink="/">Ver cardápio</a></div> }
-  @else { <div class="order-list">@for (order of orders(); track order.id) { <a class="order-card" [routerLink]="['/orders', order.id]"><div><strong>Pedido #{{ order.id.slice(-6).toUpperCase() }}</strong><small>{{ order.createdAt | date:'dd/MM/yyyy, HH:mm' }}</small></div><span class="status" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span><strong>{{ order.totalMinor / 100 | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></a> }</div>
-    @if (nextCursor()) { <button class="load-more" type="button" [disabled]="loadingMore()" (click)="loadMore()">{{ loadingMore() ? 'Carregando…' : 'Carregar mais' }}</button> }
+  <header>
+    <p class="eyebrow">Sua conta</p>
+    <h1 id="orders-title">Meus pedidos</h1>
+  </header>
+  @if (loading()) {
+    <div class="order-list" aria-label="Carregando pedidos">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="order-card skeleton"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="empty-state" role="alert">
+      <img src="/images/order-placeholder.webp" alt="" />
+      <h2>Pedidos indisponíveis</h2>
+      <p>{{ error() }}</p>
+      <button type="button" (click)="load()">Tentar novamente</button>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="empty-state">
+      <img src="/images/order-placeholder.webp" alt="Ilustração de um pedido" />
+      <h2>Faça seu primeiro pedido</h2>
+      <p>Seus pedidos aparecerão aqui.</p>
+      <a routerLink="/">Ver cardápio</a>
+    </div>
+  } @else {
+    <div class="order-list">
+      @for (order of orders(); track order.id) {
+        <a class="order-card" [routerLink]="['/orders', order.id]"
+          ><div>
+            <strong>Pedido #{{ order.id.slice(-6).toUpperCase() }}</strong
+            ><small>{{ order.createdAt | date: 'dd/MM/yyyy, HH:mm' }}</small>
+          </div>
+          <span class="status" [attr.data-status]="order.status">{{
+            statusLabel(order.status)
+          }}</span
+          ><strong>{{
+            order.totalMinor / 100 | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR'
+          }}</strong></a
+        >
+      }
+    </div>
+    @if (nextCursor()) {
+      <button class="load-more" type="button" [disabled]="loadingMore()" (click)="loadMore()">
+        {{ loadingMore() ? 'Carregando…' : 'Carregar mais' }}
+      </button>
+    }
   }
 </section>

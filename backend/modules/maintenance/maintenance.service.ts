@@ -1,4 +1,4 @@
-import type { CleanupResult, MaintenanceRepository } from "./maintenance.repository";
+import type { CleanupResult, MaintenanceRepository } from './maintenance.repository';
 
 const DAY_MS = 86_400_000;
 

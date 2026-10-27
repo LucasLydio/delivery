@@ -1,5 +1,5 @@
-import { Prisma, type PrismaClient } from "@prisma/client";
-import { getPrisma } from "../../infra/prisma/client";
+import { Prisma, type PrismaClient } from '@prisma/client';
+import { getPrisma } from '../../infra/prisma/client';
 
 export interface CustomerRecord {
   id: string;
@@ -48,13 +48,15 @@ export interface CustomersRepository {
 }
 
 function isUniqueConflict(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
 
 export class PrismaCustomersRepository implements CustomersRepository {
   constructor(private readonly client?: PrismaClient) {}
 
-  private get prisma(): PrismaClient { return this.client ?? getPrisma(); }
+  private get prisma(): PrismaClient {
+    return this.client ?? getPrisma();
+  }
 
   findByPhone(phone: string): Promise<CustomerRecord | null> {
     return this.prisma.customer.findUnique({ where: { phone } });
@@ -65,16 +67,18 @@ export class PrismaCustomersRepository implements CustomersRepository {
   }
 
   async create(input: { loginName: string; name: string; phone: string }): Promise<CustomerRecord> {
-    try { return await this.prisma.customer.create({ data: input }); }
-    catch (error) {
+    try {
+      return await this.prisma.customer.create({ data: input });
+    } catch (error) {
       if (isUniqueConflict(error)) throw new CustomerIdentityConflictError();
       throw error;
     }
   }
 
   async update(id: string, input: CustomerUpdate): Promise<CustomerRecord> {
-    try { return await this.prisma.customer.update({ where: { id }, data: input }); }
-    catch (error) {
+    try {
+      return await this.prisma.customer.update({ where: { id }, data: input });
+    } catch (error) {
       if (isUniqueConflict(error)) throw new CustomerIdentityConflictError();
       throw error;
     }
@@ -85,10 +89,17 @@ export class PrismaCustomersRepository implements CustomersRepository {
   }
 
   findSessionByTokenHash(tokenHash: string): Promise<CustomerSessionRecord | null> {
-    return this.prisma.customerSession.findUnique({ where: { tokenHash }, include: { customer: true } });
+    return this.prisma.customerSession.findUnique({
+      where: { tokenHash },
+      include: { customer: true },
+    });
   }
 
-  async rotateSession(id: string, revokedAt: Date, replacement: NewCustomerSession): Promise<boolean> {
+  async rotateSession(
+    id: string,
+    revokedAt: Date,
+    replacement: NewCustomerSession,
+  ): Promise<boolean> {
     return this.prisma.$transaction(async (transaction) => {
       const result = await transaction.customerSession.updateMany({
         where: { id, revokedAt: null, expiresAt: { gt: revokedAt } },
@@ -101,10 +112,16 @@ export class PrismaCustomersRepository implements CustomersRepository {
   }
 
   async revokeSessionByTokenHash(tokenHash: string, revokedAt: Date): Promise<void> {
-    await this.prisma.customerSession.updateMany({ where: { tokenHash, revokedAt: null }, data: { revokedAt } });
+    await this.prisma.customerSession.updateMany({
+      where: { tokenHash, revokedAt: null },
+      data: { revokedAt },
+    });
   }
 
   async revokeFamily(familyId: string, revokedAt: Date): Promise<void> {
-    await this.prisma.customerSession.updateMany({ where: { familyId, revokedAt: null }, data: { revokedAt } });
+    await this.prisma.customerSession.updateMany({
+      where: { familyId, revokedAt: null },
+      data: { revokedAt },
+    });
   }
 }

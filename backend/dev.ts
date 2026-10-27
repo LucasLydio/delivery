@@ -8,7 +8,7 @@ const server = app.listen(port, host, () => {
 });
 
 function shutdown(): void {
-  server.close(error => {
+  server.close((error) => {
     if (error) {
       console.error('Failed to stop local API', error);
     }

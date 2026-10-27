@@ -1,0 +1,352 @@
+:host {
+  display: block;
+}
+.editor-page {
+  width: min(100%, 76rem);
+  margin: auto;
+}
+.page-header {
+  margin-bottom: 1.25rem;
+}
+.page-header a {
+  color: var(--brand-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.page-header h1 {
+  margin: 0.65rem 0 0.25rem;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  letter-spacing: -0.05em;
+}
+.page-header p {
+  margin: 0;
+  color: var(--color-light);
+  font-size: 0.82rem;
+}
+.notice,
+.error {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+}
+.notice {
+  background: #e8f5eb;
+  color: #235f36;
+}
+.error {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #fff0ee;
+  color: #91392f;
+}
+.error button {
+  padding: 0.4rem 0.7rem;
+  border-radius: 99px;
+  background: #91392f;
+  color: #fff;
+  font-weight: 800;
+}
+.main-card,
+.options-section {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--bg-lighter);
+  box-shadow: var(--shadow-sm);
+}
+.card-heading,
+.options-section > header,
+.group-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.card-heading > div > span,
+.options-section > header > div > span {
+  color: var(--brand-dark);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+.card-heading h2,
+.options-section h2 {
+  margin: 0.25rem 0;
+  font-size: 1.15rem;
+}
+.status {
+  padding: 0.35rem 0.65rem;
+  border-radius: 99px;
+  background: #e8f5eb;
+  color: #235f36;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+.status.off {
+  background: #f3eeee;
+  color: #775b59;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 8rem;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.wide {
+  grid-column: 1/-1;
+}
+label {
+  display: grid;
+  gap: 0.4rem;
+}
+label span {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.68rem 0.75rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--color-dark);
+}
+input,
+select {
+  min-height: 2.8rem;
+}
+textarea {
+  resize: vertical;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--brand-light);
+  border-color: var(--brand-medium);
+}
+.main-card > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+.main-card > footer a,
+.main-card > footer button,
+.options-section button,
+.inline-actions button {
+  min-height: 2.7rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+.main-card > footer a,
+.secondary {
+  border: 1px solid var(--border-medium);
+  background: #fff;
+  color: var(--color-dark);
+}
+.main-card > footer button,
+.options-section button:not(.secondary):not(.danger),
+.inline-actions button:not(.secondary) {
+  background: var(--color-dark);
+  color: #fff;
+}
+button:disabled {
+  opacity: 0.55;
+}
+.options-section {
+  margin-top: 1rem;
+}
+.options-section > header p,
+.group-card header p {
+  margin: 0.2rem 0 0;
+  color: var(--color-light);
+  font-size: 0.72rem;
+}
+.inline-form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) 7rem 7rem 7rem;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-light);
+}
+.inline-form h3 {
+  grid-column: 1/-1;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.inline-form .wide {
+  grid-column: auto;
+}
+.inline-actions {
+  display: flex;
+  grid-column: 1/-1;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.group-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.group-card {
+  padding: 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+.group-card h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+.group-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+.option-list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.option-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.6rem;
+  background: var(--bg-light);
+}
+.option-list li.disabled {
+  opacity: 0.65;
+}
+.option-list li > div:first-child {
+  display: grid;
+  gap: 0.18rem;
+}
+.option-list strong {
+  font-size: 0.78rem;
+}
+.option-list span,
+.no-options {
+  color: var(--color-light);
+  font-size: 0.67rem;
+}
+.option-list li > div:last-child {
+  display: flex;
+  gap: 0.4rem;
+}
+.option-list button {
+  min-height: 2.1rem;
+  padding: 0.4rem 0.6rem;
+}
+.danger {
+  border: 1px solid #e5b6b2;
+  background: #fff5f4;
+  color: #8c332c;
+}
+.danger.enable {
+  border-color: #acd2b7;
+  background: #f2fbf4;
+  color: #235f36;
+}
+.no-options {
+  margin: 0.9rem 0 0;
+}
+.empty-state {
+  margin-top: 1rem;
+  padding: 2rem;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.empty-state h3 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.empty-state p {
+  margin: 0.35rem 0;
+  color: var(--color-light);
+  font-size: 0.75rem;
+}
+.skeleton {
+  min-height: 26rem;
+  background: linear-gradient(
+    90deg,
+    var(--bg-medium) 25%,
+    var(--bg-light) 37%,
+    var(--bg-medium) 63%
+  );
+  background-size: 400% 100%;
+  animation: shine 1.4s infinite;
+}
+@keyframes shine {
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (max-width: 750px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .form-grid .wide {
+    grid-column: 1/-1;
+  }
+  .inline-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .inline-form .wide {
+    grid-column: 1/-1;
+  }
+  .options-section > header,
+  .group-card > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .group-actions {
+    width: 100%;
+  }
+  .group-actions button {
+    flex: 1;
+  }
+  .option-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .option-list li > div:last-child {
+    width: 100%;
+  }
+  .option-list li button {
+    flex: 1;
+  }
+}
+@media (max-width: 450px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid > * {
+    grid-column: 1 !important;
+  }
+  .inline-form {
+    grid-template-columns: 1fr;
+  }
+  .inline-form > * {
+    grid-column: 1 !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

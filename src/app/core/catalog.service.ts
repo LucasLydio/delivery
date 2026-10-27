@@ -14,7 +14,7 @@ const CATEGORY_CACHE_KEY = 'delivery-categories-v1';
 function readCache<T>(key: string, valid: (value: unknown) => boolean): T | null {
   try {
     const value: unknown = JSON.parse(localStorage.getItem(key) ?? 'null');
-    return valid(value) ? value as T : null;
+    return valid(value) ? (value as T) : null;
   } catch {
     return null;
   }
@@ -25,7 +25,9 @@ function isCatalog(value: unknown): boolean {
 }
 
 function isCategories(value: unknown): boolean {
-  return !!value && typeof value === 'object' && Array.isArray((value as CategorySnapshot).categories);
+  return (
+    !!value && typeof value === 'object' && Array.isArray((value as CategorySnapshot).categories)
+  );
 }
 
 @Injectable({ providedIn: 'root' })
@@ -47,7 +49,9 @@ export class CatalogService {
   async load(force = false): Promise<void> {
     if (this.request) return this.request;
     if (this.loaded() && !force) return;
-    this.request = this.fetchCatalog().finally(() => { this.request = null; });
+    this.request = this.fetchCatalog().finally(() => {
+      this.request = null;
+    });
     return this.request;
   }
 
@@ -56,7 +60,7 @@ export class CatalogService {
   }
 
   async product(id: string): Promise<CatalogProduct | null> {
-    const existing = this.products().find(product => product.id === id || product.slug === id);
+    const existing = this.products().find((product) => product.id === id || product.slug === id);
     if (existing) return existing;
     try {
       const product = await firstValueFrom(
@@ -109,9 +113,11 @@ export class CatalogService {
   private captureFailure(error: unknown): void {
     const unavailable = error instanceof HttpErrorResponse && error.status === 0;
     this.offline.set(unavailable || (typeof navigator !== 'undefined' && !navigator.onLine));
-    this.error.set(this.offline()
-      ? 'Sem conexão com a internet.'
-      : 'Não foi possível carregar o cardápio agora.');
+    this.error.set(
+      this.offline()
+        ? 'Sem conexão com a internet.'
+        : 'Não foi possível carregar o cardápio agora.',
+    );
   }
 
   private deriveCategories(products: CatalogProduct[]): CatalogCategory[] {

@@ -21,7 +21,12 @@ export class ProfileComponent {
   readonly error = signal<string | null>(null);
 
   initials(): string {
-    return (this.auth.customer()?.name ?? '').split(/\s+/).slice(0, 2).map(value => value[0]).join('').toUpperCase();
+    return (this.auth.customer()?.name ?? '')
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((value) => value[0])
+      .join('')
+      .toUpperCase();
   }
 
   async logout(): Promise<void> {
@@ -33,10 +38,11 @@ export class ProfileComponent {
       this.cart.clear();
       await this.router.navigate(['/login']);
     } catch (error) {
-      this.error.set(apiErrorMessage(error, 'Não foi possível encerrar sua sessão. Tente novamente.'));
+      this.error.set(
+        apiErrorMessage(error, 'Não foi possível encerrar sua sessão. Tente novamente.'),
+      );
     } finally {
       this.loggingOut.set(false);
     }
   }
 }
-

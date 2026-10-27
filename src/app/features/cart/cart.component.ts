@@ -19,10 +19,16 @@ export class CartComponent implements OnInit {
   readonly cutlery = signal(0);
   readonly checkoutMessage = signal<string | null>(null);
 
-  ngOnInit(): void { void this.catalog.load(); }
+  ngOnInit(): void {
+    void this.catalog.load();
+  }
 
-  addCutlery(): void { this.cutlery.update(value => value + 1); }
-  removeCutlery(): void { this.cutlery.update(value => Math.max(0, value - 1)); }
+  addCutlery(): void {
+    this.cutlery.update((value) => value + 1);
+  }
+  removeCutlery(): void {
+    this.cutlery.update((value) => Math.max(0, value - 1));
+  }
 
   formatPrice(value: number): string {
     const { locale, currency } = this.config.config();

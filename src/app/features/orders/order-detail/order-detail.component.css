@@ -1,0 +1,81 @@
+.order-detail {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem;
+}
+.back {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f6f6f6;
+  color: #111;
+  text-decoration: none;
+  font-size: 2rem;
+}
+.hero {
+  margin: 1.2rem 0;
+  padding: 1.4rem;
+  border-radius: 24px;
+  background: #1c1c1c;
+  color: #fff;
+}
+.hero p,
+.hero h1 {
+  margin: 0.2rem 0;
+}
+.hero small {
+  color: #d4d4d4;
+}
+.panel {
+  padding: 1.2rem;
+  border: 1px solid #ececec;
+  border-radius: 20px;
+  background: #fff;
+}
+.panel h2 {
+  margin-top: 0;
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+.line.total {
+  border: 0;
+  font-size: 1.1rem;
+}
+.notice {
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: #fff4d6;
+}
+.notice.error {
+  background: #fde8e8;
+}
+.notice button,
+.empty button {
+  border: 0;
+  background: transparent;
+  text-decoration: underline;
+  font: inherit;
+  font-weight: 700;
+}
+.empty {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+.skeleton {
+  height: 150px;
+  background: linear-gradient(90deg, #ececec 25%, #f8f8f8 37%, #ececec 63%);
+  background-size: 400% 100%;
+  animation: shine 1.4s infinite;
+}
+@keyframes shine {
+  to {
+    background-position: -100% 0;
+  }
+}

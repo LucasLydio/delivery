@@ -1,0 +1,60 @@
+<main class="admin-login" aria-labelledby="admin-login-title">
+  <a class="store-link" routerLink="/">← Voltar para a loja</a>
+  <section class="login-panel">
+    <div class="brand-mark" aria-hidden="true">✳</div>
+    <p class="eyebrow">ÁREA DA EQUIPE</p>
+    <h1 id="admin-login-title">Acesse a gestão da loja</h1>
+    <p class="intro">Entre com o e-mail e a senha fornecidos ao administrador ou gerente.</p>
+
+    @if (restoring()) {
+      <p class="restoring" role="status">Verificando sua sessão…</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <label for="admin-email">E-mail</label>
+        <input
+          id="admin-email"
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          maxlength="254"
+          placeholder="nome@loja.com.br"
+          [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched"
+          [attr.aria-describedby]="
+            form.controls.email.invalid && form.controls.email.touched ? 'admin-email-error' : null
+          "
+        />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <small id="admin-email-error" class="field-error">Informe um e-mail válido.</small>
+        }
+
+        <label for="admin-password">Senha</label>
+        <input
+          id="admin-password"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          maxlength="128"
+          [attr.aria-invalid]="form.controls.password.invalid && form.controls.password.touched"
+          [attr.aria-describedby]="
+            form.controls.password.invalid && form.controls.password.touched
+              ? 'admin-password-error'
+              : null
+          "
+        />
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <small id="admin-password-error" class="field-error"
+            >A senha deve ter pelo menos 8 caracteres.</small
+          >
+        }
+
+        @if (error()) {
+          <p class="form-error" role="alert">{{ error() }}</p>
+        }
+        <button type="submit" [disabled]="form.invalid || submitting()">
+          {{ submitting() ? 'Entrando…' : 'Entrar no painel' }}
+        </button>
+      </form>
+    }
+    <p class="security-note">Acesso restrito à equipe autorizada.</p>
+  </section>
+</main>

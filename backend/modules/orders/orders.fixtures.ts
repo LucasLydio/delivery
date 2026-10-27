@@ -1,8 +1,20 @@
-import type { CheckoutLock, ReleaseCheckoutLock } from "../../infra/redis/checkout-lock";
-import type { CheckoutQuote, OrderNotification, OrderSummary } from "../../../shared/commerce-contract";
-import type { MercadoPagoGateway, MercadoPagoResult } from "./orders.mercado-pago";
-import type { CheckoutPayment } from "./orders.schema";
-import type { CheckoutContext, CreateOrderInput, OrderCursor, OrderPageRecord, OrdersRepository, UpdatePaymentInput } from "./orders.repository";
+import type { CheckoutLock, ReleaseCheckoutLock } from '../../infra/redis/checkout-lock';
+import type {
+  AdminOrderSummary,
+  CheckoutQuote,
+  OrderNotification,
+  OrderSummary,
+} from '../../../shared/commerce-contract';
+import type { MercadoPagoGateway, MercadoPagoResult } from './orders.mercado-pago';
+import type { CheckoutPayment } from './orders.schema';
+import type {
+  CheckoutContext,
+  CreateOrderInput,
+  OrderCursor,
+  OrderPageRecord,
+  OrdersRepository,
+  UpdatePaymentInput,
+} from './orders.repository';
 
 export class MemoryCheckoutLock implements CheckoutLock {
   locked = false;
@@ -11,22 +23,51 @@ export class MemoryCheckoutLock implements CheckoutLock {
     this.acquisitionCount++;
     if (this.locked) return null;
     this.locked = true;
-    return async () => { this.locked = false; };
+    return async () => {
+      this.locked = false;
+    };
   }
 }
 
 export class FakeMercadoPagoGateway implements MercadoPagoGateway {
   calls: { orderId: string; payment: CheckoutPayment; key: string }[] = [];
-  result: MercadoPagoResult = { providerOrderId: "mp-order-1", status: "processed", outcome: "paid", paymentData: null };
-  async create(orderId: string, _totalMinor: number, _currency: string, payment: CheckoutPayment, key: string): Promise<MercadoPagoResult> {
+  result: MercadoPagoResult = {
+    providerOrderId: 'mp-order-1',
+    status: 'processed',
+    outcome: 'paid',
+    paymentData: null,
+  };
+  async create(
+    orderId: string,
+    _totalMinor: number,
+    _currency: string,
+    payment: CheckoutPayment,
+    key: string,
+  ): Promise<MercadoPagoResult> {
     this.calls.push({ orderId, payment, key });
     return this.result;
   }
-  async get(): Promise<MercadoPagoResult> { return this.result; }
+  async get(): Promise<MercadoPagoResult> {
+    return this.result;
+  }
   async cancel(): Promise<void> {}
 }
 
-function clone<T>(value: T): T { return structuredClone(value); }
+function clone<T>(value: T): T {
+  return structuredClone(value);
+}
+function adminOrder(order: OrderSummary): AdminOrderSummary {
+  return {
+    ...clone(order),
+    customer: {
+      id: 'customer-1',
+      name: 'Cliente Teste',
+      phone: '+5511999999999',
+      email: 'cliente@example.com',
+    },
+    deliveryAddress: { line1: 'Rua Um, 10', city: 'São Paulo' },
+  };
+}
 
 export class MemoryOrdersRepository implements OrdersRepository {
   readonly orders = new Map<string, OrderSummary>();
@@ -34,26 +75,56 @@ export class MemoryOrdersRepository implements OrdersRepository {
   cartPresent = true;
   context: CheckoutContext = {
     cart: {
-      id: "cart-1", customerId: "customer-1", revision: 1, currency: "BRL",
-      items: [{ id: "item-1", productId: "product-1", quantity: 1, selectedOptionIds: ["option-1"] }],
+      id: 'cart-1',
+      customerId: 'customer-1',
+      revision: 1,
+      currency: 'BRL',
+      items: [
+        { id: 'item-1', productId: 'product-1', quantity: 1, selectedOptionIds: ['option-1'] },
+      ],
     },
-    products: [{
-      id: "product-1", name: "Poke de salmão", basePriceMinor: 2500, currency: "BRL", available: true,
-      optionGroups: [{ id: "group-1", minSelections: 0, maxSelections: 1, options: [
-        { id: "option-1", name: "Abacate", priceDeltaMinor: 300, available: true },
-      ] }],
-    }],
+    products: [
+      {
+        id: 'product-1',
+        name: 'Poke de salmão',
+        basePriceMinor: 2500,
+        currency: 'BRL',
+        available: true,
+        optionGroups: [
+          {
+            id: 'group-1',
+            minSelections: 0,
+            maxSelections: 1,
+            options: [{ id: 'option-1', name: 'Abacate', priceDeltaMinor: 300, available: true }],
+          },
+        ],
+      },
+    ],
     address: {
-      id: "address-1", customerId: "customer-1", label: "Casa", line1: "Rua Um, 10", line2: null,
-      city: "São Paulo", region: "SP", postalCode: "01001000", countryCode: "BR",
-      deliveryInstructions: null, locationPin: { latitude: -23.5505, longitude: -46.6333 },
-      isDefault: true, createdAt: new Date(), updatedAt: new Date(),
+      id: 'address-1',
+      customerId: 'customer-1',
+      label: 'Casa',
+      line1: 'Rua Um, 10',
+      line2: null,
+      city: 'São Paulo',
+      region: 'SP',
+      postalCode: '01001000',
+      countryCode: 'BR',
+      deliveryInstructions: null,
+      locationPin: { latitude: -23.5505, longitude: -46.6333 },
+      isDefault: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     coupon: null,
     pricing: null,
   };
 
-  async checkoutContext(_customerId: string, _addressId: string | undefined, couponCode: string | undefined): Promise<CheckoutContext> {
+  async checkoutContext(
+    _customerId: string,
+    _addressId: string | undefined,
+    couponCode: string | undefined,
+  ): Promise<CheckoutContext> {
     return {
       ...clone(this.context),
       cart: this.cartPresent ? clone(this.context.cart) : null,
@@ -68,16 +139,22 @@ export class MemoryOrdersRepository implements OrdersRepository {
 
   async create(input: CreateOrderInput): Promise<OrderSummary> {
     const id = `order-${this.orders.size + 1}`;
-    const offline = !input.quote.paymentMethod.startsWith("MERCADO_PAGO");
+    const offline = !input.quote.paymentMethod.startsWith('MERCADO_PAGO');
     const order: OrderSummary = {
-      ...clone(input.quote), id,
-      status: offline ? "CONFIRMED" : "PAYMENT_PENDING",
-      paymentStatus: input.quote.paymentMethod === "PAY_ON_DELIVERY" ? "ON_DELIVERY"
-        : input.quote.paymentMethod === "PAY_AT_STORE" ? "AT_STORE" : "PENDING",
-      mercadoPagoStatus: null, paymentData: null,
+      ...clone(input.quote),
+      id,
+      status: offline ? 'CONFIRMED' : 'PAYMENT_PENDING',
+      paymentStatus:
+        input.quote.paymentMethod === 'PAY_ON_DELIVERY'
+          ? 'ON_DELIVERY'
+          : input.quote.paymentMethod === 'PAY_AT_STORE'
+            ? 'AT_STORE'
+            : 'PENDING',
+      mercadoPagoStatus: null,
+      paymentData: null,
       mercadoPagoOrderId: null,
-      createdAt: "2026-10-12T15:00:00.000Z",
-      confirmedAt: offline ? "2026-10-12T15:00:00.000Z" : null,
+      createdAt: '2026-10-12T15:00:00.000Z',
+      confirmedAt: offline ? '2026-10-12T15:00:00.000Z' : null,
       cancelledAt: null,
     };
     this.orders.set(id, order);
@@ -89,8 +166,10 @@ export class MemoryOrdersRepository implements OrdersRepository {
   async updatePayment(orderId: string, input: UpdatePaymentInput): Promise<OrderSummary> {
     const order = this.orders.get(orderId)!;
     Object.assign(order, {
-      status: input.status, paymentStatus: input.paymentStatus,
-      mercadoPagoStatus: input.mercadoPagoStatus, paymentData: input.paymentData,
+      status: input.status,
+      paymentStatus: input.paymentStatus,
+      mercadoPagoStatus: input.mercadoPagoStatus,
+      paymentData: input.paymentData,
       mercadoPagoOrderId: input.mercadoPagoOrderId,
       confirmedAt: input.confirmedAt?.toISOString() ?? null,
     });
@@ -98,28 +177,95 @@ export class MemoryOrdersRepository implements OrdersRepository {
   }
 
   async get(_customerId: string, orderId: string): Promise<OrderSummary | null> {
-    const order = this.orders.get(orderId); return order ? clone(order) : null;
+    const order = this.orders.get(orderId);
+    return order ? clone(order) : null;
   }
   async findByMercadoPagoId(providerOrderId: string): Promise<OrderSummary | null> {
-    return [...this.orders.values()].find((order) => order.mercadoPagoOrderId === providerOrderId) ?? null;
+    return (
+      [...this.orders.values()].find((order) => order.mercadoPagoOrderId === providerOrderId) ??
+      null
+    );
   }
-  async list(_customerId: string, limit: number, cursor: OrderCursor | null): Promise<OrderPageRecord> {
-    const ordered = [...this.orders.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.id.localeCompare(left.id));
+  async list(
+    _customerId: string,
+    limit: number,
+    cursor: OrderCursor | null,
+  ): Promise<OrderPageRecord> {
+    const ordered = [...this.orders.values()].sort(
+      (left, right) =>
+        right.createdAt.localeCompare(left.createdAt) || right.id.localeCompare(left.id),
+    );
     const start = cursor
-      ? ordered.findIndex((order) => order.createdAt < cursor.createdAt.toISOString() || (order.createdAt === cursor.createdAt.toISOString() && order.id < cursor.id))
+      ? ordered.findIndex(
+          (order) =>
+            order.createdAt < cursor.createdAt.toISOString() ||
+            (order.createdAt === cursor.createdAt.toISOString() && order.id < cursor.id),
+        )
       : 0;
     const rows = start < 0 ? [] : ordered.slice(start, start + limit + 1);
     const hasMore = rows.length > limit;
     const items = rows.slice(0, limit).map(clone);
     const last = hasMore ? items.at(-1) : undefined;
-    return { items, nextCursor: last ? { createdAt: new Date(last.createdAt), id: last.id } : null };
+    return {
+      items,
+      nextCursor: last ? { createdAt: new Date(last.createdAt), id: last.id } : null,
+    };
   }
-  async events(_customerId: string, _after: bigint, _limit: number): Promise<OrderNotification[]> { return []; }
-  async expiredPending(): Promise<OrderSummary[]> { return [...this.orders.values()].filter((order) => order.status === "PAYMENT_PENDING"); }
+  async events(_customerId: string, _after: bigint, _limit: number): Promise<OrderNotification[]> {
+    return [];
+  }
+  async expiredPending(): Promise<OrderSummary[]> {
+    return [...this.orders.values()].filter((order) => order.status === 'PAYMENT_PENDING');
+  }
   async cancel(orderId: string, providerStatus: string): Promise<OrderSummary> {
     const order = this.orders.get(orderId)!;
-    Object.assign(order, { status: "CANCELLED", paymentStatus: "CANCELLED", cancelledAt: new Date().toISOString(), mercadoPagoStatus: providerStatus });
+    Object.assign(order, {
+      status: 'CANCELLED',
+      paymentStatus: 'CANCELLED',
+      cancelledAt: new Date().toISOString(),
+      mercadoPagoStatus: providerStatus,
+    });
     return clone(order);
   }
+  async getForAdmin(orderId: string): Promise<AdminOrderSummary | null> {
+    const order = this.orders.get(orderId);
+    return order ? adminOrder(order) : null;
+  }
+  async listForAdmin(
+    status: OrderSummary['status'] | undefined,
+    limit: number,
+    cursor: OrderCursor | null,
+  ) {
+    const ordered = [...this.orders.values()]
+      .filter((order) => !status || order.status === status)
+      .sort(
+        (left, right) =>
+          right.createdAt.localeCompare(left.createdAt) || right.id.localeCompare(left.id),
+      );
+    const start = cursor
+      ? ordered.findIndex(
+          (order) =>
+            order.createdAt < cursor.createdAt.toISOString() ||
+            (order.createdAt === cursor.createdAt.toISOString() && order.id < cursor.id),
+        )
+      : 0;
+    const rows = start < 0 ? [] : ordered.slice(start, start + limit + 1);
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit).map(adminOrder);
+    const last = hasMore ? items.at(-1) : undefined;
+    return {
+      items,
+      nextCursor: last ? { createdAt: new Date(last.createdAt), id: last.id } : null,
+    };
+  }
+  async updateStatus(
+    orderId: string,
+    expectedStatus: OrderSummary['status'],
+    status: OrderSummary['status'],
+  ): Promise<AdminOrderSummary | null> {
+    const order = this.orders.get(orderId);
+    if (!order || order.status !== expectedStatus) return null;
+    order.status = status;
+    return adminOrder(order);
+  }
 }
-

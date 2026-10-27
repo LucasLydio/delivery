@@ -1,6 +1,6 @@
-import type { PrismaClient } from "@prisma/client";
-import { getPrisma } from "../../infra/prisma/client";
-import type { PushDeletion, PushRegistration } from "./push.schema";
+import type { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../../infra/prisma/client';
+import type { PushDeletion, PushRegistration } from './push.schema';
 
 export interface StoredPushSubscription {
   endpoint: string;
@@ -18,21 +18,39 @@ export interface PushRepository {
 export class PrismaPushRepository implements PushRepository {
   constructor(private readonly client?: PrismaClient) {}
 
-  private get prisma(): PrismaClient { return this.client ?? getPrisma(); }
+  private get prisma(): PrismaClient {
+    return this.client ?? getPrisma();
+  }
 
   async upsert(customerId: string, input: PushRegistration, maximum: number): Promise<void> {
     const { installId, subscription } = input;
     await this.prisma.$transaction(async (transaction) => {
       await transaction.pushSubscription.upsert({
         where: { endpoint: subscription.endpoint },
-        create: { customerId, installId, endpoint: subscription.endpoint, p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
-        update: { customerId, installId, p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
+        create: {
+          customerId,
+          installId,
+          endpoint: subscription.endpoint,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
+        update: {
+          customerId,
+          installId,
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
       });
       const excess = await transaction.pushSubscription.findMany({
-        where: { customerId }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-        skip: maximum, select: { id: true },
+        where: { customerId },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        skip: maximum,
+        select: { id: true },
       });
-      if (excess.length) await transaction.pushSubscription.deleteMany({ where: { id: { in: excess.map(({ id }) => id) } } });
+      if (excess.length)
+        await transaction.pushSubscription.deleteMany({
+          where: { id: { in: excess.map(({ id }) => id) } },
+        });
     });
   }
 

@@ -1,6 +1,6 @@
-import { createClient } from "redis";
-import { getRuntimeConfig } from "../../config/env";
-import type { CatalogCache } from "../../modules/products/products.service";
+import { createClient } from 'redis';
+import { getRuntimeConfig } from '../../config/env';
+import type { CatalogCache } from '../../modules/products/products.service';
 
 type RedisClient = ReturnType<typeof createClient>;
 
@@ -17,7 +17,9 @@ class RedisCatalogCache implements CatalogCache {
         url: this.url,
         socket: { connectTimeout: 1_000, reconnectStrategy: false },
       });
-      client.on("error", () => { /* A failed cache request falls back to PostgreSQL. */ });
+      client.on('error', () => {
+        /* A failed cache request falls back to PostgreSQL. */
+      });
       this.connection = client.connect().then(() => client);
     }
     return this.connection;
@@ -26,7 +28,7 @@ class RedisCatalogCache implements CatalogCache {
   private unavailable(): void {
     this.connection = undefined;
     this.retryAfter = Date.now() + 30_000;
-    if (!this.warned) console.warn("Catalog Redis unavailable; reading from PostgreSQL");
+    if (!this.warned) console.warn('Catalog Redis unavailable; reading from PostgreSQL');
     this.warned = true;
   }
 

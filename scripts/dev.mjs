@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 const commands = [
   {
     name: 'backend',
-    args: ['--env-file=.env.dev', '--import', 'tsx', 'backend/dev.ts'],
+    args: ['--env-file=.env.dev', '--watch', '--import', 'tsx', 'backend/dev.ts'],
   },
   {
     name: 'frontend',
@@ -15,9 +15,10 @@ let stopping = false;
 
 const children = commands.map(({ name, args }) => {
   const child = spawn(process.execPath, args, { stdio: 'inherit' });
-  child.once('exit', code => {
+  child.once('exit', (code) => {
     if (stopping) return;
-    if (code !== 0) console.error(`${name} development process stopped with exit code ${code ?? 'unknown'}.`);
+    if (code !== 0)
+      console.error(`${name} development process stopped with exit code ${code ?? 'unknown'}.`);
     stop(code ?? 1);
   });
   return child;

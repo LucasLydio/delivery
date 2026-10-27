@@ -10,4 +10,3 @@ describe('formatBrazilianPhoneInput', () => {
     expect(formatBrazilianPhoneInput('119876543219999')).toBe('(11) 9 8765-4321');
   });
 });
-

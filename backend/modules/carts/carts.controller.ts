@@ -1,9 +1,9 @@
-import type { Request, Response } from "express";
-import type { CustomerAuthenticator } from "../../shared/authentication";
-import { apiResponse } from "../../shared/response";
-import { requireBearerToken, requireJson } from "../../utils/request";
-import { synchronizeCartSchema } from "./carts.schema";
-import type { CartsService } from "./carts.service";
+import type { Request, Response } from 'express';
+import type { CustomerAuthenticator } from '../../shared/authentication';
+import { apiResponse } from '../../shared/response';
+import { requireBearerToken, requireJson } from '../../utils/request';
+import { synchronizeCartSchema } from './carts.schema';
+import type { CartsService } from './carts.service';
 
 export class CartsController {
   constructor(
@@ -18,7 +18,10 @@ export class CartsController {
   synchronize = async (request: Request, response: Response): Promise<void> => {
     requireJson(request);
     const customerId = await this.customerId(request);
-    apiResponse.put(response, await this.service.synchronize(customerId, synchronizeCartSchema.parse(request.body)));
+    apiResponse.put(
+      response,
+      await this.service.synchronize(customerId, synchronizeCartSchema.parse(request.body)),
+    );
   };
 
   clear = async (request: Request, response: Response): Promise<void> => {

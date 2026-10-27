@@ -1,9 +1,9 @@
-import type { Request, Response } from "express";
-import type { CustomerAuthenticator } from "../../shared/authentication";
-import { apiResponse } from "../../shared/response";
-import { requireBearerToken, requireJson } from "../../utils/request";
-import { deletePushSchema, registerPushSchema } from "./push.schema";
-import type { PushService } from "./push.service";
+import type { Request, Response } from 'express';
+import type { CustomerAuthenticator } from '../../shared/authentication';
+import { apiResponse } from '../../shared/response';
+import { requireBearerToken, requireJson } from '../../utils/request';
+import { deletePushSchema, registerPushSchema } from './push.schema';
+import type { PushService } from './push.service';
 
 export class PushController {
   constructor(
@@ -21,7 +21,9 @@ export class PushController {
   unregister = async (request: Request, response: Response): Promise<void> => {
     requireJson(request);
     const input = deletePushSchema.parse(request.body);
-    apiResponse.delete(response, { removed: await this.service.unregister(await this.customerId(request), input) });
+    apiResponse.delete(response, {
+      removed: await this.service.unregister(await this.customerId(request), input),
+    });
   };
 
   private customerId(request: Request): Promise<string> {

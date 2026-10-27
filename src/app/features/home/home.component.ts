@@ -9,7 +9,10 @@ import { CatalogService } from '../../core/catalog.service';
 import { DishImageComponent } from '../../shared/dish-image.component';
 
 function normalizeSearch(value: string): string {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR');
 }
 
 @Component({
@@ -26,16 +29,24 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   readonly query = signal('');
   readonly category = signal('all');
-  readonly featured = computed(() => this.catalog.products().find(product => product.available) ?? null);
-  readonly visibleMenu = computed(() => this.catalog.products().filter(item => {
-    const matchesCategory = this.category() === 'all' || item.categoryId === this.category();
-    const text = normalizeSearch(`${item.name} ${item.description} ${item.categoryName}`);
-    return item.available && matchesCategory && text.includes(normalizeSearch(this.query().trim()));
-  }));
+  readonly featured = computed(
+    () => this.catalog.products().find((product) => product.available) ?? null,
+  );
+  readonly visibleMenu = computed(() =>
+    this.catalog.products().filter((item) => {
+      const matchesCategory = this.category() === 'all' || item.categoryId === this.category();
+      const text = normalizeSearch(`${item.name} ${item.description} ${item.categoryName}`);
+      return (
+        item.available && matchesCategory && text.includes(normalizeSearch(this.query().trim()))
+      );
+    }),
+  );
 
-  ngOnInit(): void { void this.catalog.load(); }
+  ngOnInit(): void {
+    void this.catalog.load();
+  }
   add(item: CatalogProduct): void {
-    if (item.optionGroups.some(group => group.minSelections > 0)) {
+    if (item.optionGroups.some((group) => group.minSelections > 0)) {
       void this.router.navigate(['/product', item.id]);
       return;
     }
@@ -44,7 +55,8 @@ export class HomeComponent implements OnInit {
 
   formatPrice(valueMinor: number): string {
     const { locale, currency } = this.config.config();
-    return new Intl.NumberFormat(locale, { style: 'currency', currency })
-      .format(minorToMajor(valueMinor, currency, locale));
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(
+      minorToMajor(valueMinor, currency, locale),
+    );
   }
 }

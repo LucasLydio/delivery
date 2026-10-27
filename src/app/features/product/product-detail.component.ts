@@ -1,6 +1,10 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import type { CatalogProduct, ProductOption, ProductOptionGroup } from '../../../../shared/commerce-contract';
+import type {
+  CatalogProduct,
+  ProductOption,
+  ProductOptionGroup,
+} from '../../../../shared/commerce-contract';
 import { minorToMajor } from '../../../../shared/cart-preview';
 import { AppConfigService } from '../../core/app-config';
 import { CartService } from '../../core/cart.service';
@@ -24,16 +28,21 @@ export class ProductDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly item = signal<CatalogProduct | null>(null);
   readonly selections = signal<Record<string, string[]>>({});
-  readonly validSelections = computed(() => this.item()?.optionGroups.every(group => {
-    const count = this.selections()[group.id]?.length ?? 0;
-    return count >= group.minSelections && count <= group.maxSelections;
-  }) ?? false);
+  readonly validSelections = computed(
+    () =>
+      this.item()?.optionGroups.every((group) => {
+        const count = this.selections()[group.id]?.length ?? 0;
+        return count >= group.minSelections && count <= group.maxSelections;
+      }) ?? false,
+  );
   readonly totalMinor = computed(() => {
     const product = this.item();
     if (!product) return 0;
     const selected = new Set(Object.values(this.selections()).flat());
-    const optionTotal = product.optionGroups.flatMap(group => group.options)
-      .filter(option => selected.has(option.id)).reduce((sum, option) => sum + option.priceDeltaMinor, 0);
+    const optionTotal = product.optionGroups
+      .flatMap((group) => group.options)
+      .filter((option) => selected.has(option.id))
+      .reduce((sum, option) => sum + option.priceDeltaMinor, 0);
     return (product.basePriceMinor + optionTotal) * this.quantity();
   });
 
@@ -46,8 +55,12 @@ export class ProductDetailComponent implements OnInit {
     this.loading.set(false);
   }
 
-  increment(): void { this.quantity.update(value => Math.min(20, value + 1)); }
-  decrement(): void { this.quantity.update(value => Math.max(1, value - 1)); }
+  increment(): void {
+    this.quantity.update((value) => Math.min(20, value + 1));
+  }
+  decrement(): void {
+    this.quantity.update((value) => Math.max(1, value - 1));
+  }
 
   isSelected(groupId: string, optionId: string): boolean {
     return this.selections()[groupId]?.includes(optionId) ?? false;
@@ -55,10 +68,10 @@ export class ProductDetailComponent implements OnInit {
 
   toggleOption(group: ProductOptionGroup, option: ProductOption): void {
     if (!option.available) return;
-    this.selections.update(current => {
+    this.selections.update((current) => {
       const selected = current[group.id] ?? [];
       let next: string[];
-      if (selected.includes(option.id)) next = selected.filter(id => id !== option.id);
+      if (selected.includes(option.id)) next = selected.filter((id) => id !== option.id);
       else if (group.maxSelections === 1) next = [option.id];
       else if (selected.length < group.maxSelections) next = [...selected, option.id];
       else return current;
@@ -76,7 +89,8 @@ export class ProductDetailComponent implements OnInit {
 
   formatPrice(valueMinor: number): string {
     const { locale, currency } = this.config.config();
-    return new Intl.NumberFormat(locale, { style: 'currency', currency })
-      .format(minorToMajor(valueMinor, currency, locale));
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(
+      minorToMajor(valueMinor, currency, locale),
+    );
   }
 }

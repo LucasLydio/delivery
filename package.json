@@ -6,7 +6,7 @@
     "start": "ng serve --proxy-config proxy.conf.json",
     "dev": "node scripts/dev.mjs",
     "dev:frontend": "npm run start",
-    "dev:backend": "node --env-file=.env.dev --import tsx backend/dev.ts",
+    "dev:backend": "node --env-file=.env.dev --watch --import tsx backend/dev.ts",
     "build": "npm run prisma:generate && npm run typecheck:backend && ng build",
     "build:dev": "npm run prisma:generate:dev && npm run typecheck:backend && ng build",
     "build:prod": "npm run prisma:generate:prod && npm run typecheck:backend && ng build",
@@ -28,7 +28,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:backend": "tsx --test \"backend/**/*.spec.ts\"",
-    "test:backend:db": "node --env-file-if-exists=.env.dev --import tsx --test \"backend/**/*.db.test.ts\""
+    "test:backend:db": "node --env-file-if-exists=.env.dev --import tsx --test \"backend/**/*.db.test.ts\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "prettier": {
     "printWidth": 100,
@@ -83,6 +85,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "netlify-cli": "^23.0.0",
+    "prettier": "^3.9.10",
     "prisma": "6.19.0",
     "supertest": "^7.3.1",
     "tsx": "^4.20.0",

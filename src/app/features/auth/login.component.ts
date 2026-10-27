@@ -24,7 +24,15 @@ export class LoginComponent {
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly form = this.builder.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80), Validators.pattern(/^[\p{L}\s]+$/u)]],
+    name: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(80),
+        Validators.pattern(/^[\p{L}\s]+$/u),
+      ],
+    ],
     phone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\) 9 \d{4}-\d{4}$/)]],
   });
 
@@ -33,19 +41,26 @@ export class LoginComponent {
   }
 
   formatPhone(event: Event): void {
-    this.form.controls.phone.setValue(formatBrazilianPhoneInput((event.target as HTMLInputElement).value));
+    this.form.controls.phone.setValue(
+      formatBrazilianPhoneInput((event.target as HTMLInputElement).value),
+    );
   }
 
   async submit(): Promise<void> {
     this.error.set(null);
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.submitting.set(true);
     try {
       await this.auth.login(this.form.getRawValue());
       void this.push.initialize();
       await this.router.navigateByUrl(this.safeReturnUrl());
     } catch (error) {
-      this.error.set(apiErrorMessage(error, 'Não foi possível entrar. Confira seus dados e tente novamente.'));
+      this.error.set(
+        apiErrorMessage(error, 'Não foi possível entrar. Confira seus dados e tente novamente.'),
+      );
     } finally {
       this.submitting.set(false);
     }
@@ -56,4 +71,3 @@ export class LoginComponent {
     return value?.startsWith('/') && !value.startsWith('//') ? value : '/profile';
   }
 }
-

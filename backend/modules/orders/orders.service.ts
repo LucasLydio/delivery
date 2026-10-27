@@ -1,13 +1,30 @@
-import { Prisma } from "@prisma/client";
-import type { CheckoutQuote, OrderNotification, OrderPage, OrderSummary } from "../../../shared/commerce-contract";
-import type { CheckoutLock } from "../../infra/redis/checkout-lock";
-import { BadRequestException, ConflictException, NotFoundException, TooManyRequestsException } from "../../shared/exceptions";
-import { priceCart } from "../carts/carts.service";
-import type { MercadoPagoGateway } from "./orders.mercado-pago";
-import { calculateCheckout, type Coordinates, type DeliveryPricing } from "./orders.pricing";
-import type { OrderCursor, OrdersRepository } from "./orders.repository";
-import type { CheckoutQuoteRequest, CheckoutRequest } from "./orders.schema";
-import { noOpOrderNotifier, type OrderNotifier } from "../push/push.sender";
+import { Prisma } from '@prisma/client';
+import type {
+  AdminOrderPage,
+  AdminOrderSummary,
+  CheckoutQuote,
+  OrderNotification,
+  OrderPage,
+  OrderSummary,
+} from '../../../shared/commerce-contract';
+import type { CheckoutLock } from '../../infra/redis/checkout-lock';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  TooManyRequestsException,
+} from '../../shared/exceptions';
+import { priceCart } from '../carts/carts.service';
+import type { MercadoPagoGateway } from './orders.mercado-pago';
+import { calculateCheckout, type Coordinates, type DeliveryPricing } from './orders.pricing';
+import type { OrderCursor, OrdersRepository } from './orders.repository';
+import type {
+  AdminOrderListInput,
+  CheckoutQuoteRequest,
+  CheckoutRequest,
+  UpdateOrderStatusInput,
+} from './orders.schema';
+import { noOpOrderNotifier, type OrderNotifier } from '../push/push.sender';
 
 export interface OrdersConfiguration {
   currency: string;
@@ -19,39 +36,75 @@ export interface OrdersConfiguration {
   unpaidTimeoutMinutes: number;
 }
 
-export interface CheckoutResult { order: OrderSummary; replayed: boolean }
+export interface CheckoutResult {
+  order: OrderSummary;
+  replayed: boolean;
+}
+
+const statusTransitions: Partial<
+  Record<OrderSummary['status'], readonly OrderSummary['status'][]>
+> = {
+  CONFIRMED: ['PREPARING'],
+  PREPARING: ['READY'],
+  READY: ['OUT_FOR_DELIVERY', 'COMPLETED'],
+  OUT_FOR_DELIVERY: ['COMPLETED'],
+};
 
 function encodeCursor(cursor: OrderCursor): string {
-  return Buffer.from(JSON.stringify({ createdAt: cursor.createdAt.toISOString(), id: cursor.id }), "utf8").toString("base64url");
+  return Buffer.from(
+    JSON.stringify({ createdAt: cursor.createdAt.toISOString(), id: cursor.id }),
+    'utf8',
+  ).toString('base64url');
 }
 
 function decodeCursor(value: string | undefined): OrderCursor | null {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Record<string, unknown>;
-    const createdAt = typeof parsed["createdAt"] === "string" ? new Date(parsed["createdAt"]) : new Date(Number.NaN);
-    const id = parsed["id"];
-    if (!Number.isFinite(createdAt.getTime()) || typeof id !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) throw new Error();
+    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    const createdAt =
+      typeof parsed['createdAt'] === 'string'
+        ? new Date(parsed['createdAt'])
+        : new Date(Number.NaN);
+    const id = parsed['id'];
+    if (
+      !Number.isFinite(createdAt.getTime()) ||
+      typeof id !== 'string' ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(id)
+    )
+      throw new Error();
     return { createdAt, id };
   } catch {
-    throw new BadRequestException("Invalid order cursor");
+    throw new BadRequestException('Invalid order cursor');
   }
 }
 
 function locationFrom(value: unknown): Coordinates | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const pin = value as Record<string, unknown>;
-  return typeof pin.latitude === "number" && typeof pin.longitude === "number"
+  return typeof pin.latitude === 'number' && typeof pin.longitude === 'number'
     ? { latitude: pin.latitude, longitude: pin.longitude }
     : null;
 }
 
-function addressSnapshot(address: Awaited<ReturnType<OrdersRepository["checkoutContext"]>>["address"], locationPin: Coordinates | null) {
+function addressSnapshot(
+  address: Awaited<ReturnType<OrdersRepository['checkoutContext']>>['address'],
+  locationPin: Coordinates | null,
+) {
   if (!address) return null;
   return {
-    id: address.id, label: address.label, line1: address.line1, line2: address.line2,
-    city: address.city, region: address.region, postalCode: address.postalCode,
-    countryCode: address.countryCode, deliveryInstructions: address.deliveryInstructions, locationPin,
+    id: address.id,
+    label: address.label,
+    line1: address.line1,
+    line2: address.line2,
+    city: address.city,
+    region: address.region,
+    postalCode: address.postalCode,
+    countryCode: address.countryCode,
+    deliveryInstructions: address.deliveryInstructions,
+    locationPin,
   };
 }
 
@@ -69,12 +122,17 @@ export class OrdersService {
     return (await this.prepare(customerId, input)).quote;
   }
 
-  async checkout(customerId: string, idempotencyKey: string, input: CheckoutRequest): Promise<CheckoutResult> {
+  async checkout(
+    customerId: string,
+    idempotencyKey: string,
+    input: CheckoutRequest,
+  ): Promise<CheckoutResult> {
     // A completed checkout has already consumed its cart, so replay lookup must happen first.
     // New checkouts perform the same lookup again while holding the cart lock.
     const replay = await this.repository.findByIdempotencyKey(customerId, idempotencyKey);
     if (replay) {
-      if (replay.status === "PAYMENT_PENDING") throw new ConflictException("Checkout is still processing", { orderId: replay.id });
+      if (replay.status === 'PAYMENT_PENDING')
+        throw new ConflictException('Checkout is still processing', { orderId: replay.id });
       return { order: replay, replayed: true };
     }
     const prepared = await this.prepare(customerId, {
@@ -85,11 +143,15 @@ export class OrdersService {
       paymentMethod: input.payment.method,
     });
     const release = await this.lock.acquire(prepared.cartId, this.config.lockTtlMs);
-    if (!release) throw new TooManyRequestsException("Checkout is already being processed", { retryAfterSeconds: Math.ceil(this.config.lockTtlMs / 1000) });
+    if (!release)
+      throw new TooManyRequestsException('Checkout is already being processed', {
+        retryAfterSeconds: Math.ceil(this.config.lockTtlMs / 1000),
+      });
     try {
       const existing = await this.repository.findByIdempotencyKey(customerId, idempotencyKey);
       if (existing) {
-        if (existing.status === "PAYMENT_PENDING") throw new ConflictException("Checkout is still processing", { orderId: existing.id });
+        if (existing.status === 'PAYMENT_PENDING')
+          throw new ConflictException('Checkout is still processing', { orderId: existing.id });
         return { order: existing, replayed: true };
       }
 
@@ -101,32 +163,54 @@ export class OrdersService {
           idempotencyKey,
           quote: prepared.quote,
           addressSnapshot: prepared.addressSnapshot,
-          paymentExpiresAt: new Date(this.now().getTime() + this.config.unpaidTimeoutMinutes * 60_000),
+          paymentExpiresAt: new Date(
+            this.now().getTime() + this.config.unpaidTimeoutMinutes * 60_000,
+          ),
         });
       } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-          throw new ConflictException("Cart changed during checkout");
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          throw new ConflictException('Cart changed during checkout');
         }
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
           const concurrent = await this.repository.findByIdempotencyKey(customerId, idempotencyKey);
-          if (concurrent?.status === "PAYMENT_PENDING") throw new ConflictException("Checkout is still processing", { orderId: concurrent.id });
+          if (concurrent?.status === 'PAYMENT_PENDING')
+            throw new ConflictException('Checkout is still processing', { orderId: concurrent.id });
           if (concurrent) return { order: concurrent, replayed: true };
         }
         throw error;
       }
 
-      if (input.payment.method !== "MERCADO_PAGO_PIX" && input.payment.method !== "MERCADO_PAGO_CARD") {
+      if (
+        input.payment.method !== 'MERCADO_PAGO_PIX' &&
+        input.payment.method !== 'MERCADO_PAGO_CARD'
+      ) {
         await this.notify(order);
         return { order, replayed: false };
       }
-      const provider = await this.mercadoPago.create(order.id, order.totalMinor, order.currency, input.payment, idempotencyKey);
+      const provider = await this.mercadoPago.create(
+        order.id,
+        order.totalMinor,
+        order.currency,
+        input.payment,
+        idempotencyKey,
+      );
       order = await this.repository.updatePayment(order.id, {
-        status: provider.outcome === "paid" ? "CONFIRMED" : provider.outcome === "failed" ? "PAYMENT_FAILED" : "PAYMENT_PENDING",
-        paymentStatus: provider.outcome === "paid" ? "PAID" : provider.outcome === "failed" ? "FAILED" : "PENDING",
+        status:
+          provider.outcome === 'paid'
+            ? 'CONFIRMED'
+            : provider.outcome === 'failed'
+              ? 'PAYMENT_FAILED'
+              : 'PAYMENT_PENDING',
+        paymentStatus:
+          provider.outcome === 'paid'
+            ? 'PAID'
+            : provider.outcome === 'failed'
+              ? 'FAILED'
+              : 'PENDING',
         mercadoPagoOrderId: provider.providerOrderId,
         mercadoPagoStatus: provider.status,
         paymentData: provider.paymentData,
-        confirmedAt: provider.outcome === "paid" ? this.now() : null,
+        confirmedAt: provider.outcome === 'paid' ? this.now() : null,
       });
       await this.notify(order);
       return { order, replayed: false };
@@ -137,51 +221,110 @@ export class OrdersService {
 
   async get(customerId: string, orderId: string): Promise<OrderSummary> {
     const order = await this.repository.get(customerId, orderId);
-    if (!order) throw new NotFoundException("Order not found");
+    if (!order) throw new NotFoundException('Order not found');
     return order;
   }
 
   async list(customerId: string, input: { limit: number; cursor?: string }): Promise<OrderPage> {
     const page = await this.repository.list(customerId, input.limit, decodeCursor(input.cursor));
-    return { items: page.items, nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null };
+    return {
+      items: page.items,
+      nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null,
+    };
   }
   events(customerId: string, after: bigint, limit = 100): Promise<OrderNotification[]> {
     return this.repository.events(customerId, after, Math.min(100, Math.max(1, limit)));
   }
 
+  async listForAdmin(input: AdminOrderListInput): Promise<AdminOrderPage> {
+    const page = await this.repository.listForAdmin(
+      input.status,
+      input.limit,
+      decodeCursor(input.cursor),
+    );
+    return {
+      items: page.items,
+      nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null,
+    };
+  }
+
+  async updateStatus(
+    actorId: string,
+    orderId: string,
+    input: UpdateOrderStatusInput,
+  ): Promise<AdminOrderSummary> {
+    const current = await this.repository.getForAdmin(orderId);
+    if (!current) throw new NotFoundException('Pedido não encontrado');
+    if (!statusTransitions[current.status]?.includes(input.status)) {
+      throw new ConflictException('Esta alteração de status não é permitida', {
+        currentStatus: current.status,
+        requestedStatus: input.status,
+      });
+    }
+    const updated = await this.repository.updateStatus(
+      orderId,
+      current.status,
+      input.status,
+      actorId,
+      this.now(),
+    );
+    if (!updated)
+      throw new ConflictException(
+        'O pedido foi atualizado por outro usuário. Atualize a lista e tente novamente.',
+      );
+    await this.notify(updated);
+    return updated;
+  }
+
   async reconcileMercadoPago(providerOrderId: string): Promise<OrderSummary | null> {
     const current = await this.repository.findByMercadoPagoId(providerOrderId);
-    if (!current || current.status === "CONFIRMED" || current.status === "CANCELLED") return current;
+    if (
+      !current ||
+      ['CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'].includes(
+        current.status,
+      )
+    )
+      return current;
     const provider = await this.mercadoPago.get(providerOrderId);
-    if (provider.outcome === "failed" && ["canceled", "cancelled"].includes(provider.status)) {
+    if (provider.outcome === 'failed' && ['canceled', 'cancelled'].includes(provider.status)) {
       const cancelled = await this.repository.cancel(current.id, provider.status);
       await this.notify(cancelled);
       return cancelled;
     }
     const updated = await this.repository.updatePayment(current.id, {
-      status: provider.outcome === "paid" ? "CONFIRMED" : provider.outcome === "failed" ? "PAYMENT_FAILED" : "PAYMENT_PENDING",
-      paymentStatus: provider.outcome === "paid" ? "PAID" : provider.outcome === "failed" ? "FAILED" : "PENDING",
+      status:
+        provider.outcome === 'paid'
+          ? 'CONFIRMED'
+          : provider.outcome === 'failed'
+            ? 'PAYMENT_FAILED'
+            : 'PAYMENT_PENDING',
+      paymentStatus:
+        provider.outcome === 'paid' ? 'PAID' : provider.outcome === 'failed' ? 'FAILED' : 'PENDING',
       mercadoPagoOrderId: provider.providerOrderId,
       mercadoPagoStatus: provider.status,
       paymentData: provider.paymentData,
-      confirmedAt: provider.outcome === "paid" ? this.now() : null,
+      confirmedAt: provider.outcome === 'paid' ? this.now() : null,
     });
-    if (updated.status !== current.status || updated.paymentStatus !== current.paymentStatus) await this.notify(updated);
+    if (updated.status !== current.status || updated.paymentStatus !== current.paymentStatus)
+      await this.notify(updated);
     return updated;
   }
 
   async cancelExpired(limit = 100): Promise<number> {
-    const expired = await this.repository.expiredPending(this.now(), Math.min(100, Math.max(1, limit)));
+    const expired = await this.repository.expiredPending(
+      this.now(),
+      Math.min(100, Math.max(1, limit)),
+    );
     let cancelled = 0;
     for (const order of expired) {
       if (!order.mercadoPagoOrderId) continue;
       const provider = await this.mercadoPago.get(order.mercadoPagoOrderId);
-      if (provider.outcome === "paid") {
+      if (provider.outcome === 'paid') {
         await this.reconcileMercadoPago(order.mercadoPagoOrderId);
         continue;
       }
       await this.mercadoPago.cancel(order.mercadoPagoOrderId, `cancel-${order.id}`);
-      const cancelledOrder = await this.repository.cancel(order.id, "canceled");
+      const cancelledOrder = await this.repository.cancel(order.id, 'canceled');
       await this.notify(cancelledOrder);
       cancelled++;
     }
@@ -192,25 +335,41 @@ export class OrdersService {
     try {
       await this.notifier.notify(order);
     } catch (error) {
-      console.error("Order notification failed", {
+      console.error('Order notification failed', {
         orderId: order.id,
-        message: error instanceof Error ? error.message : "Unknown error",
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
-  private async prepare(customerId: string, input: CheckoutQuoteRequest): Promise<{
-    quote: CheckoutQuote; cartId: string; addressSnapshot: Record<string, unknown> | null;
+  private async prepare(
+    customerId: string,
+    input: CheckoutQuoteRequest,
+  ): Promise<{
+    quote: CheckoutQuote;
+    cartId: string;
+    addressSnapshot: Record<string, unknown> | null;
   }> {
     const now = this.now();
-    const context = await this.repository.checkoutContext(customerId, input.addressId, input.couponCode, now);
-    if (!context.cart || context.cart.items.length === 0) throw new BadRequestException("Cart is empty");
-    if (context.cart.currency !== this.config.currency) throw new BadRequestException("Cart currency is invalid");
+    const context = await this.repository.checkoutContext(
+      customerId,
+      input.addressId,
+      input.couponCode,
+      now,
+    );
+    if (!context.cart || context.cart.items.length === 0)
+      throw new BadRequestException('Cart is empty');
+    if (context.cart.currency !== this.config.currency)
+      throw new BadRequestException('Cart currency is invalid');
     if (String(context.cart.revision) !== input.cartRevision) {
-      throw new ConflictException("Cart revision conflict", { currentRevision: String(context.cart.revision) });
+      throw new ConflictException('Cart revision conflict', {
+        currentRevision: String(context.cart.revision),
+      });
     }
-    if (input.paymentMethod !== "PAY_AT_STORE" && !context.address) throw new NotFoundException("Address not found");
-    if (input.couponCode && !context.coupon) throw new BadRequestException("Coupon is invalid or expired");
+    if (input.paymentMethod !== 'PAY_AT_STORE' && !context.address)
+      throw new NotFoundException('Address not found');
+    if (input.couponCode && !context.coupon)
+      throw new BadRequestException('Coupon is invalid or expired');
     const selectedLocation = input.locationPin ?? locationFrom(context.address?.locationPin);
     const quote = calculateCheckout({
       cartRevision: context.cart.revision,
@@ -225,7 +384,10 @@ export class OrdersService {
       discountPercent: context.coupon?.discountPercent ?? 0,
       expiresAt: new Date(now.getTime() + this.config.quoteTtlSeconds * 1000),
     });
-    return { quote, cartId: context.cart.id, addressSnapshot: addressSnapshot(context.address, selectedLocation) };
+    return {
+      quote,
+      cartId: context.cart.id,
+      addressSnapshot: addressSnapshot(context.address, selectedLocation),
+    };
   }
 }
-

@@ -1,6 +1,6 @@
-import type { Request, Response } from "express";
-import { apiResponse } from "../../shared/response";
-import type { SystemService } from "./system.service";
+import type { Request, Response } from 'express';
+import { apiResponse } from '../../shared/response';
+import type { SystemService } from './system.service';
 
 export class SystemController {
   constructor(private readonly service: SystemService) {}

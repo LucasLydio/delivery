@@ -1,5 +1,5 @@
-import type { PrismaClient } from "@prisma/client";
-import { getPrisma } from "../../infra/prisma/client";
+import type { PrismaClient } from '@prisma/client';
+import { getPrisma } from '../../infra/prisma/client';
 
 export interface RetentionCutoffs {
   sessions: Date;
@@ -22,23 +22,36 @@ export interface MaintenanceRepository {
 
 export class PrismaMaintenanceRepository implements MaintenanceRepository {
   constructor(private readonly client?: PrismaClient) {}
-  private get prisma(): PrismaClient { return this.client ?? getPrisma(); }
+  private get prisma(): PrismaClient {
+    return this.client ?? getPrisma();
+  }
 
   async cleanup(cutoffs: RetentionCutoffs): Promise<CleanupResult> {
     return this.prisma.$transaction(async (transaction) => {
-      const [customerSessions, userSessions, orderEvents, stateSnapshots, orphanPushSubscriptions] = await Promise.all([
-        transaction.customerSession.deleteMany({
-          where: { OR: [{ expiresAt: { lt: cutoffs.sessions } }, { revokedAt: { lt: cutoffs.sessions } }] },
-        }),
-        transaction.userSession.deleteMany({
-          where: { OR: [{ expiresAt: { lt: cutoffs.sessions } }, { revokedAt: { lt: cutoffs.sessions } }] },
-        }),
-        transaction.orderEvent.deleteMany({ where: { createdAt: { lt: cutoffs.orderEvents } } }),
-        transaction.stateSnapshot.deleteMany({ where: { createdAt: { lt: cutoffs.snapshots } } }),
-        transaction.pushSubscription.deleteMany({
-          where: { customerId: null, updatedAt: { lt: cutoffs.orphanPushSubscriptions } },
-        }),
-      ]);
+      const [customerSessions, userSessions, orderEvents, stateSnapshots, orphanPushSubscriptions] =
+        await Promise.all([
+          transaction.customerSession.deleteMany({
+            where: {
+              OR: [
+                { expiresAt: { lt: cutoffs.sessions } },
+                { revokedAt: { lt: cutoffs.sessions } },
+              ],
+            },
+          }),
+          transaction.userSession.deleteMany({
+            where: {
+              OR: [
+                { expiresAt: { lt: cutoffs.sessions } },
+                { revokedAt: { lt: cutoffs.sessions } },
+              ],
+            },
+          }),
+          transaction.orderEvent.deleteMany({ where: { createdAt: { lt: cutoffs.orderEvents } } }),
+          transaction.stateSnapshot.deleteMany({ where: { createdAt: { lt: cutoffs.snapshots } } }),
+          transaction.pushSubscription.deleteMany({
+            where: { customerId: null, updatedAt: { lt: cutoffs.orphanPushSubscriptions } },
+          }),
+        ]);
       return {
         customerSessions: customerSessions.count,
         userSessions: userSessions.count,
