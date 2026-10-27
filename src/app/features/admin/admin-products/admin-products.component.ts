@@ -1,22 +1,24 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import type { AdminProduct } from '../../../../../shared/commerce-contract';
 import { AdminApiService } from '../../../core/admin-api.service';
 import { apiErrorMessage } from '../../../core/api-error';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 type AvailabilityFilter = 'all' | 'active' | 'disabled';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CurrencyPipe, FormsModule, RouterLink],
+  imports: [CurrencyPipe, FormsModule, RouterLink, ConfirmDialogComponent],
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.css',
 })
 export class AdminProductsComponent implements OnInit {
   private readonly api = inject(AdminApiService);
+  private readonly confirmDialog = viewChild.required(ConfirmDialogComponent);
   readonly products = signal<AdminProduct[]>([]);
   readonly loading = signal(true);
   readonly updatingId = signal<string | null>(null);
@@ -63,11 +65,15 @@ export class AdminProductsComponent implements OnInit {
 
   async toggle(product: AdminProduct): Promise<void> {
     if (this.updatingId()) return;
-    if (
-      product.available &&
-      !window.confirm(`Desativar “${product.name}”? Ele deixará de aparecer no cardápio.`)
-    )
-      return;
+    if (product.available) {
+      const confirmed = await this.confirmDialog().request({
+        title: 'Desativar produto?',
+        message: `“${product.name}” deixará de aparecer no cardápio.`,
+        confirmLabel: 'Desativar produto',
+        destructive: true,
+      });
+      if (!confirmed) return;
+    }
     this.updatingId.set(product.id);
     this.error.set(null);
     this.notice.set(null);

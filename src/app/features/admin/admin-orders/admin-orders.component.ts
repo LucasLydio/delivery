@@ -1,5 +1,13 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import type { AdminOrderSummary, OrderSummary } from '../../../../../shared/commerce-contract';
 import {
   AdminApiService,
@@ -7,6 +15,7 @@ import {
   type FulfillmentStatus,
 } from '../../../core/admin-api.service';
 import { apiErrorMessage } from '../../../core/api-error';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 interface OrderFilter {
   label: string;
@@ -24,12 +33,13 @@ const filters: readonly OrderFilter[] = [
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe],
+  imports: [CurrencyPipe, DatePipe, ConfirmDialogComponent],
   templateUrl: './admin-orders.component.html',
   styleUrl: './admin-orders.component.css',
 })
 export class AdminOrdersComponent implements OnInit {
   private readonly api = inject(AdminApiService);
+  private readonly confirmDialog = viewChild.required(ConfirmDialogComponent);
   private lastLoadedAt = 0;
 
   readonly filters = filters;
@@ -97,8 +107,15 @@ export class AdminOrdersComponent implements OnInit {
 
   async updateStatus(order: AdminOrderSummary, status: FulfillmentStatus): Promise<void> {
     if (this.updatingOrderId()) return;
-    if (status === 'COMPLETED' && !window.confirm('Confirmar que este pedido foi concluído?'))
-      return;
+    if (status === 'COMPLETED') {
+      const confirmed = await this.confirmDialog().request({
+        title: 'Concluir pedido?',
+        message: `Confirme que o pedido #${this.shortId(order.id)} foi concluído.`,
+        confirmLabel: 'Concluir pedido',
+        destructive: true,
+      });
+      if (!confirmed) return;
+    }
     this.updatingOrderId.set(order.id);
     this.error.set(null);
     this.notice.set(null);

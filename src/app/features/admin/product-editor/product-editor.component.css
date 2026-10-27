@@ -122,11 +122,16 @@ select {
 textarea {
   resize: vertical;
 }
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid var(--brand-light);
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--brand-dark);
+  outline-offset: 3px;
   border-color: var(--brand-medium);
+}
+.editor-page :is(a, button):focus-visible {
+  outline: 3px solid var(--brand-dark);
+  outline-offset: 3px;
 }
 .main-card > footer {
   display: flex;

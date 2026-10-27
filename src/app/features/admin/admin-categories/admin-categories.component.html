@@ -18,13 +18,23 @@
       ><span>Nome</span
       ><input
         formControlName="name"
-        maxlength="120"
+        required
+        minlength="2"
+        maxlength="25"
         placeholder="Ex.: Executivos"
         autocomplete="off"
     /></label>
     <label class="order-field"
       ><span>Ordem</span
-      ><input formControlName="sortOrder" type="number" min="0" max="100000" inputmode="numeric"
+      ><input
+        formControlName="sortOrder"
+        type="number"
+        required
+        min="0"
+        max="100000"
+        step="1"
+        inputmode="numeric"
+        pattern="[0-9]*"
     /></label>
     <div class="form-actions">
       @if (editingId()) {
@@ -93,4 +103,6 @@
       }
     </div>
   }
+
+  <app-confirm-dialog />
 </section>

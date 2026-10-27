@@ -1,4 +1,8 @@
-<section class="editor-page" aria-labelledby="editor-title">
+<section
+  class="editor-page"
+  aria-labelledby="editor-title"
+  [attr.aria-busy]="loading() || saving() ? 'true' : null"
+>
   <header class="page-header">
     <div>
       <a routerLink="/admin/products">← Voltar para produtos</a>
@@ -45,6 +49,8 @@
           ><span>Nome</span
           ><input
             formControlName="name"
+            required
+            minlength="2"
             maxlength="120"
             placeholder="Ex.: Filé de frango executivo"
         /></label>
@@ -52,6 +58,8 @@
           ><span>Descrição</span
           ><textarea
             formControlName="description"
+            required
+            minlength="3"
             maxlength="1000"
             rows="4"
             placeholder="Descreva o prato e seus acompanhamentos"
@@ -59,7 +67,7 @@
         </label>
         <label
           ><span>Categoria</span
-          ><select formControlName="categoryId">
+          ><select formControlName="categoryId" required>
             <option value="" disabled>Selecione</option>
             @for (category of categories(); track category.id) {
               <option [value]="category.id">
@@ -70,16 +78,27 @@
         >
         <label
           ><span>Preço (R$)</span
-          ><input formControlName="price" inputmode="decimal" placeholder="29,90"
+          ><input
+            formControlName="price"
+            type="text"
+            required
+            maxlength="10"
+            inputmode="decimal"
+            pattern="(1000000([.,]0{1,2})?|([1-9][0-9]{0,5}|0)([.,][0-9]{1,2})?)"
+            autocomplete="off"
+            placeholder="29,90"
         /></label>
         <label
           ><span>Ordem</span
           ><input
             formControlName="sortOrder"
             type="number"
+            required
             min="0"
             max="100000"
+            step="1"
             inputmode="numeric"
+            pattern="[0-9]*"
         /></label>
       </div>
       <footer>
@@ -98,26 +117,69 @@
             <h2 id="options-title">Grupos e opções</h2>
             <p>Ex.: “Escolha o acompanhamento” com opções como arroz e salada.</p>
           </div>
-          <button type="button" (click)="newGroup()">+ Novo grupo</button>
+          <button
+            type="button"
+            aria-controls="option-group-editor"
+            [attr.aria-expanded]="editingGroupId() === 'new'"
+            (click)="newGroup()"
+          >
+            + Novo grupo
+          </button>
         </header>
 
         @if (editingGroupId()) {
-          <form class="inline-form" [formGroup]="groupForm" (ngSubmit)="saveGroup()">
+          <form
+            id="option-group-editor"
+            class="inline-form"
+            [formGroup]="groupForm"
+            (ngSubmit)="saveGroup()"
+          >
             <h3>{{ editingGroupId() === 'new' ? 'Novo grupo' : 'Editar grupo' }}</h3>
             <label class="wide"
               ><span>Nome</span
-              ><input formControlName="name" placeholder="Ex.: Escolha até 2 acompanhamentos"
+              ><input
+                #groupNameInput
+                formControlName="name"
+                required
+                minlength="2"
+                maxlength="120"
+                placeholder="Ex.: Escolha até 2 acompanhamentos"
             /></label>
             <label
               ><span>Mínimo</span
-              ><input formControlName="minSelections" type="number" min="0" max="20"
+              ><input
+                formControlName="minSelections"
+                type="number"
+                required
+                min="0"
+                max="20"
+                step="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
             /></label>
             <label
               ><span>Máximo</span
-              ><input formControlName="maxSelections" type="number" min="1" max="20"
+              ><input
+                formControlName="maxSelections"
+                type="number"
+                required
+                min="1"
+                max="20"
+                step="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
             /></label>
             <label
-              ><span>Ordem</span><input formControlName="sortOrder" type="number" min="0"
+              ><span>Ordem</span
+              ><input
+                formControlName="sortOrder"
+                type="number"
+                required
+                min="0"
+                max="100000"
+                step="1"
+                inputmode="numeric"
+                pattern="[0-9]*"
             /></label>
             <div class="inline-actions">
               <button type="button" class="secondary" (click)="cancelGroup()">Cancelar</button
@@ -144,28 +206,70 @@
                   </p>
                 </div>
                 <div class="group-actions">
-                  <button type="button" class="secondary" (click)="editGroup(group)">
+                  <button
+                    type="button"
+                    class="secondary"
+                    aria-controls="option-group-editor"
+                    [attr.aria-expanded]="editingGroupId() === group.id"
+                    [attr.aria-label]="'Editar grupo ' + group.name"
+                    (click)="editGroup(group)"
+                  >
                     Editar grupo</button
-                  ><button type="button" (click)="newOption(group.id)">+ Opção</button>
+                  ><button
+                    type="button"
+                    [attr.aria-controls]="'option-editor-' + group.id"
+                    [attr.aria-expanded]="
+                      optionGroupId() === group.id && editingOptionId() === 'new'
+                    "
+                    [attr.aria-label]="'Adicionar opção ao grupo ' + group.name"
+                    (click)="newOption(group.id)"
+                  >
+                    + Opção
+                  </button>
                 </div>
               </header>
 
               @if (optionGroupId() === group.id) {
                 <form
+                  [id]="'option-editor-' + group.id"
                   class="inline-form option-form"
                   [formGroup]="optionForm"
                   (ngSubmit)="saveOption()"
                 >
                   <h3>{{ editingOptionId() === 'new' ? 'Nova opção' : 'Editar opção' }}</h3>
                   <label class="wide"
-                    ><span>Nome</span><input formControlName="name" placeholder="Ex.: Batata frita"
+                    ><span>Nome</span
+                    ><input
+                      #optionNameInput
+                      formControlName="name"
+                      required
+                      minlength="2"
+                      maxlength="120"
+                      placeholder="Ex.: Batata frita"
                   /></label>
                   <label
                     ><span>Adicional (R$)</span
-                    ><input formControlName="price" inputmode="decimal" placeholder="0,00"
+                    ><input
+                      formControlName="price"
+                      type="text"
+                      required
+                      maxlength="10"
+                      inputmode="decimal"
+                      pattern="(1000000([.,]0{1,2})?|([1-9][0-9]{0,5}|0)([.,][0-9]{1,2})?)"
+                      autocomplete="off"
+                      placeholder="0,00"
                   /></label>
                   <label
-                    ><span>Ordem</span><input formControlName="sortOrder" type="number" min="0"
+                    ><span>Ordem</span
+                    ><input
+                      formControlName="sortOrder"
+                      type="number"
+                      required
+                      min="0"
+                      max="100000"
+                      step="1"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
                   /></label>
                   <div class="inline-actions">
                     <button type="button" class="secondary" (click)="cancelOption()">
@@ -198,6 +302,11 @@
                       <button
                         type="button"
                         class="secondary"
+                        [attr.aria-controls]="'option-editor-' + group.id"
+                        [attr.aria-expanded]="
+                          optionGroupId() === group.id && editingOptionId() === option.id
+                        "
+                        [attr.aria-label]="'Editar opção ' + option.name"
                         (click)="editOption(group.id, option)"
                       >
                         Editar</button
@@ -206,6 +315,12 @@
                         class="danger"
                         [class.enable]="!option.available"
                         [disabled]="saving()"
+                        [attr.aria-label]="
+                          saving()
+                            ? 'Atualizando opção ' + option.name
+                            : (option.available ? 'Desativar opção ' : 'Reativar opção ') +
+                              option.name
+                        "
                         (click)="toggleOption(option)"
                       >
                         {{ option.available ? 'Desativar' : 'Reativar' }}
@@ -220,4 +335,6 @@
       </section>
     }
   }
+
+  <app-confirm-dialog />
 </section>

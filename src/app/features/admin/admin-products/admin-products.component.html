@@ -1,4 +1,8 @@
-<section class="products-page" aria-labelledby="products-title">
+<section
+  class="products-page"
+  aria-labelledby="products-title"
+  [attr.aria-busy]="loading() || updatingId() !== null ? 'true' : null"
+>
   <header class="page-header">
     <div>
       <p>CATÁLOGO</p>
@@ -14,6 +18,9 @@
       ><input
         [ngModel]="search()"
         (ngModelChange)="search.set($event)"
+        type="search"
+        maxlength="120"
+        autocomplete="off"
         placeholder="Buscar por produto ou categoria"
     /></label>
     <label
@@ -91,11 +98,19 @@
             product.available ? 'Ativo' : 'Desativado'
           }}</span>
           <div class="actions">
-            <a [routerLink]="['/admin/products', product.id]">Editar</a
+            <a
+              [routerLink]="['/admin/products', product.id]"
+              [attr.aria-label]="'Editar produto ' + product.name"
+              >Editar</a
             ><button
               type="button"
               [class.enable]="!product.available"
               [disabled]="updatingId() === product.id"
+              [attr.aria-label]="
+                updatingId() === product.id
+                  ? 'Atualizando produto ' + product.name
+                  : (product.available ? 'Desativar produto ' : 'Reativar produto ') + product.name
+              "
               (click)="toggle(product)"
             >
               {{
@@ -111,4 +126,6 @@
       }
     </div>
   }
+
+  <app-confirm-dialog />
 </section>

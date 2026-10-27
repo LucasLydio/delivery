@@ -1,5 +1,14 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  OnInit,
+  afterNextRender,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type {
@@ -10,6 +19,7 @@ import type {
 } from '../../../../../shared/commerce-contract';
 import { AdminApiService } from '../../../core/admin-api.service';
 import { apiErrorMessage } from '../../../core/api-error';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 const pricePattern = /^\d+(?:[.,]\d{1,2})?$/;
 
@@ -27,7 +37,7 @@ function formatMinor(minor: number): string {
 @Component({
   selector: 'app-product-editor',
   standalone: true,
-  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, ConfirmDialogComponent],
   templateUrl: './product-editor.component.html',
   styleUrl: './product-editor.component.css',
 })
@@ -36,6 +46,10 @@ export class ProductEditorComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly injector = inject(Injector);
+  private readonly confirmDialog = viewChild.required(ConfirmDialogComponent);
+  private readonly groupNameInput = viewChild<ElementRef<HTMLInputElement>>('groupNameInput');
+  private readonly optionNameInput = viewChild<ElementRef<HTMLInputElement>>('optionNameInput');
   readonly productId = this.route.snapshot.paramMap.get('id');
   readonly product = signal<AdminProduct | null>(null);
   readonly categories = signal<AdminCategory[]>([]);
@@ -146,6 +160,9 @@ export class ProductEditorComponent implements OnInit {
       maxSelections: group.maxSelections,
       sortOrder: group.sortOrder,
     });
+    afterNextRender(() => this.groupNameInput()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
   }
   cancelGroup(): void {
     this.editingGroupId.set(null);
@@ -195,6 +212,9 @@ export class ProductEditorComponent implements OnInit {
       price: formatMinor(option.priceDeltaMinor),
       sortOrder: option.sortOrder,
     });
+    afterNextRender(() => this.optionNameInput()?.nativeElement.focus(), {
+      injector: this.injector,
+    });
   }
   cancelOption(): void {
     this.optionGroupId.set(null);
@@ -231,7 +251,15 @@ export class ProductEditorComponent implements OnInit {
 
   async toggleOption(option: AdminProductOption): Promise<void> {
     if (this.saving()) return;
-    if (option.available && !window.confirm(`Desativar a opção “${option.name}”?`)) return;
+    if (option.available) {
+      const confirmed = await this.confirmDialog().request({
+        title: 'Desativar opção?',
+        message: `A opção “${option.name}” deixará de estar disponível para seleção.`,
+        confirmLabel: 'Desativar opção',
+        destructive: true,
+      });
+      if (!confirmed) return;
+    }
     this.saving.set(true);
     this.clearMessages();
     try {

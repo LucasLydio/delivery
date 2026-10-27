@@ -1,19 +1,21 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { AdminCategory } from '../../../../../shared/commerce-contract';
 import { AdminApiService } from '../../../core/admin-api.service';
 import { apiErrorMessage } from '../../../core/api-error';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ConfirmDialogComponent],
   templateUrl: './admin-categories.component.html',
   styleUrl: './admin-categories.component.css',
 })
 export class AdminCategoriesComponent implements OnInit {
   private readonly api = inject(AdminApiService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly confirmDialog = viewChild.required(ConfirmDialogComponent);
 
   readonly categories = signal<AdminCategory[]>([]);
   readonly loading = signal(true);
@@ -93,13 +95,15 @@ export class AdminCategoriesComponent implements OnInit {
 
   async toggle(category: AdminCategory): Promise<void> {
     if (this.updatingId()) return;
-    if (
-      category.available &&
-      !window.confirm(
-        `Desativar “${category.name}”? Os produtos dela deixarão de aparecer no cardápio.`,
-      )
-    )
-      return;
+    if (category.available) {
+      const confirmed = await this.confirmDialog().request({
+        title: 'Desativar categoria?',
+        message: `Os produtos de “${category.name}” deixarão de aparecer no cardápio.`,
+        confirmLabel: 'Desativar categoria',
+        destructive: true,
+      });
+      if (!confirmed) return;
+    }
     this.updatingId.set(category.id);
     this.error.set(null);
     this.notice.set(null);

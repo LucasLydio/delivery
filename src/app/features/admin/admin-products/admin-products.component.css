@@ -58,10 +58,15 @@ select {
   background: #fff;
   color: var(--color-dark);
 }
-input:focus,
-select:focus {
-  outline: 2px solid var(--brand-light);
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--brand-dark);
+  outline-offset: 3px;
   border-color: var(--brand-medium);
+}
+.products-page :is(a, button):focus-visible {
+  outline: 3px solid var(--brand-dark);
+  outline-offset: 3px;
 }
 .sr-only {
   position: absolute;
