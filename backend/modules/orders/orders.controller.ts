@@ -4,7 +4,7 @@ import { BadRequestException } from "../../shared/exceptions";
 import { apiResponse } from "../../shared/response";
 import { requireBearerToken, requireJson, requirePathId } from "../../utils/request";
 import { checkoutQuoteRequestSchema, checkoutRequestSchema } from "./orders.schema";
-import { orderEventCursorSchema } from "./orders.schema";
+import { orderEventCursorSchema, orderListQuerySchema } from "./orders.schema";
 import type { OrdersService } from "./orders.service";
 
 export class OrdersController {
@@ -25,7 +25,7 @@ export class OrdersController {
   };
 
   list = async (request: Request, response: Response): Promise<void> => {
-    apiResponse.get(response, await this.service.list(await this.customerId(request)));
+    apiResponse.get(response, await this.service.list(await this.customerId(request), orderListQuerySchema.parse(request.query)));
   };
 
   events = async (request: Request, response: Response): Promise<void> => {

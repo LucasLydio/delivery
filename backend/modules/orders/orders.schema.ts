@@ -62,3 +62,8 @@ export type CheckoutQuoteRequest = z.infer<typeof checkoutQuoteRequestSchema>;
 
 export const orderEventCursorSchema = z.string().regex(/^\d+$/).transform(BigInt);
 
+export const orderListQuerySchema = z.object({
+  cursor: z.string().trim().min(1).max(512).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+

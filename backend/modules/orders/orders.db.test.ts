@@ -57,6 +57,20 @@ test("Prisma creates an order snapshot, event, and consumes the cart atomically"
     assert.equal(await prisma.cart.count({ where: { customerId: customer.id } }), 0);
     assert.equal((await repository.events(customer.id, 0n, 10))[0].type, "order.payment_pending");
     assert.equal((await repository.findByIdempotencyKey(customer.id, "db-checkout-1"))?.id, order.id);
+
+    await prisma.order.create({ data: {
+      id: "older-order", customerId: customer.id, idempotencyKey: "db-checkout-older",
+      status: "CONFIRMED", paymentMethod: "PAY_AT_STORE", paymentStatus: "AT_STORE",
+      currency: "BRL", cartRevision: 1, subtotalMinor: 1200, totalMinor: 1200,
+      quoteExpiresAt: new Date("2026-10-11T15:05:00Z"), confirmedAt: new Date("2026-10-11T15:00:00Z"),
+      createdAt: new Date("2026-10-11T15:00:00Z"),
+    } });
+    const firstPage = await repository.list(customer.id, 1, null);
+    assert.deepEqual(firstPage.items.map((item) => item.id), [order.id]);
+    assert.ok(firstPage.nextCursor);
+    const secondPage = await repository.list(customer.id, 1, firstPage.nextCursor);
+    assert.deepEqual(secondPage.items.map((item) => item.id), ["older-order"]);
+    assert.equal(secondPage.nextCursor, null);
   } finally {
     await prisma?.$disconnect();
     await testPool.end();

@@ -47,5 +47,18 @@ describe('authInterceptor', () => {
     tick();
     expect(result).toEqual(refreshedSession.customer);
   }));
+
+  it('keeps public catalog requests anonymous so shared caches can reuse them', fakeAsync(() => {
+    void auth.login({ name: 'Ana Lima', phone: '(11) 9 8765-4321' });
+    http.expectOne('/api/auth/login').flush(firstSession);
+    tick();
+
+    client.get('/api/products?q=prato').subscribe();
+    const catalog = http.expectOne('/api/products?q=prato');
+    expect(catalog.request.headers.has('authorization')).toBeFalse();
+    expect(catalog.request.withCredentials).toBeFalse();
+    catalog.flush({ version: '1', fetchedAt: '', currency: 'BRL', products: [] });
+    tick();
+  }));
 });
 

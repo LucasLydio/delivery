@@ -15,6 +15,11 @@ const runtimeSchema = z.object({
   SUPABASE_STORAGE_BUCKET: z.preprocess(emptyAsUndefined, z.string().regex(/^[A-Za-z0-9_-]{1,63}$/).optional()),
   CORS_ORIGIN: z.string().optional(),
   VAPID_PUBLIC_KEY: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  VAPID_PRIVATE_KEY: z.preprocess(emptyAsUndefined, z.string().min(1).optional()),
+  VAPID_SUBJECT: z.preprocess(emptyAsUndefined, z.string().refine(
+    (value) => value.startsWith("mailto:") || value.startsWith("https://"),
+    "VAPID_SUBJECT must use mailto: or https://",
+  ).optional()),
   AUTH_TOKEN_SECRET: z.preprocess(emptyAsUndefined, z.string().min(32).optional()),
   AUTH_TOKEN_ISSUER: z.string().min(1).default("delivery-api"),
   AUTH_TOKEN_AUDIENCE: z.string().min(1).default("delivery-pwa"),
@@ -39,6 +44,12 @@ const runtimeSchema = z.object({
   MERCADO_PAGO_API_URL: z.url().default("https://api.mercadopago.com"),
   CHECKOUT_LOCK_TTL_MS: z.coerce.number().int().min(5_000).max(60_000).default(15_000),
   UNPAID_ORDER_TIMEOUT_MINUTES: z.coerce.number().int().min(1).max(60).default(5),
+  AUTH_SESSION_RETENTION_DAYS: z.coerce.number().int().min(1).max(365).default(7),
+  ORDER_EVENT_RETENTION_DAYS: z.coerce.number().int().min(7).max(730).default(90),
+  STATE_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().min(1).max(90).default(7),
+  ORPHAN_PUSH_RETENTION_DAYS: z.coerce.number().int().min(1).max(90).default(7),
+  MAX_ADDRESSES_PER_CUSTOMER: z.coerce.number().int().min(1).max(50).default(10),
+  MAX_PUSH_SUBSCRIPTIONS_PER_CUSTOMER: z.coerce.number().int().min(1).max(20).default(5),
 });
 
 export function getRuntimeConfig() {
@@ -58,6 +69,13 @@ export function getRuntimeConfig() {
 export function getDatabaseUrl(): string {
   const databaseUrl = getRuntimeConfig().DATABASE_URL;
   if (!databaseUrl) throw new Error("DATABASE_URL is required for this endpoint");
+  const url = new URL(databaseUrl);
+  if (process.env["NODE_ENV"] === "production" && url.hostname.endsWith(".supabase.com")) {
+    const transactionPooler = url.hostname.includes(".pooler.supabase.com") && url.port === "6543";
+    if (!transactionPooler) {
+      throw new Error("Production DATABASE_URL must use the Supabase transaction pooler on port 6543");
+    }
+  }
   return databaseUrl;
 }
 

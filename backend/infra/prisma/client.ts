@@ -15,7 +15,7 @@ export function getPrisma(): PrismaClient {
 
   const pool = globalForPrisma.deliveryPool ?? new Pool({
     connectionString: getDatabaseUrl(),
-    max: 5,
+    max: 1,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 5_000,
   });

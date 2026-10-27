@@ -28,8 +28,8 @@ async function token(api: ReturnType<typeof request>): Promise<string> {
   return (await api.post("/api/auth/login").send({ name: "João Silva", phone: "(11) 9 8765-4321" }).expect(201)).body.accessToken;
 }
 
-test("pay on delivery confirms the order and snapshots the server-priced cart", async () => {
-  const { api } = setup();
+test("pay on delivery confirms the order and paginates the order history", async () => {
+  const { api, repository } = setup();
   const access = await token(api);
   const result = await api.post("/api/checkout").set("authorization", `Bearer ${access}`)
     .set("x-idempotency-key", "checkout-offline-1").send({
@@ -39,6 +39,17 @@ test("pay on delivery confirms the order and snapshots the server-priced cart", 
   assert.equal(result.body.paymentStatus, "ON_DELIVERY");
   assert.equal(result.body.totalMinor, 2800);
   await api.get(`/api/orders/${result.body.id}`).set("authorization", `Bearer ${access}`).expect(200);
+
+  repository.orders.set("order-older", { ...structuredClone(result.body), id: "order-older", createdAt: "2026-10-11T15:00:00.000Z" });
+  const firstPage = await api.get("/api/orders?limit=1").set("authorization", `Bearer ${access}`).expect(200);
+  assert.deepEqual(firstPage.body.items.map((order: { id: string }) => order.id), [result.body.id]);
+  assert.equal(typeof firstPage.body.nextCursor, "string");
+  const secondPage = await api.get(`/api/orders?limit=1&cursor=${encodeURIComponent(firstPage.body.nextCursor)}`)
+    .set("authorization", `Bearer ${access}`).expect(200);
+  assert.deepEqual(secondPage.body.items.map((order: { id: string }) => order.id), ["order-older"]);
+  assert.equal(secondPage.body.nextCursor, null);
+  await api.get("/api/orders?limit=51").set("authorization", `Bearer ${access}`).expect(400);
+  await api.get("/api/orders?cursor=invalid").set("authorization", `Bearer ${access}`).expect(400, { error: "Invalid order cursor" });
 });
 
 test("card checkout is idempotent and calls Mercado Pago once", async () => {

@@ -20,6 +20,8 @@ model StateSnapshot {
 
 model PushSubscription {
   id        String   @id @default(cuid())
+  customerId String?  @map("customer_id")
+  customer  Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
   installId String   @map("install_id")
   endpoint  String   @unique
   p256dh    String
@@ -28,6 +30,7 @@ model PushSubscription {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([installId])
+  @@index([customerId, updatedAt])
   @@map("push_subscriptions")
 }
 
@@ -134,6 +137,7 @@ model Customer {
   email       String?
   phone       String?           @unique
   sessions    CustomerSession[]
+  pushSubscriptions PushSubscription[]
   addresses   Address[]
   cart        Cart?
   orders      Order[]
@@ -158,6 +162,7 @@ model CustomerSession {
   @@index([customerId, createdAt])
   @@index([familyId])
   @@index([expiresAt])
+  @@index([revokedAt])
   @@map("customer_sessions")
 }
 
@@ -195,6 +200,7 @@ model UserSession {
   @@index([userId, createdAt])
   @@index([familyId])
   @@index([expiresAt])
+  @@index([revokedAt])
   @@map("user_sessions")
 }
 
@@ -359,6 +365,7 @@ model OrderEvent {
 
   @@index([customerId, id])
   @@index([orderId, id])
+  @@index([createdAt])
   @@map("order_events")
 }
 

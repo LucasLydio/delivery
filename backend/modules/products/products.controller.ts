@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { BadRequestException, NotFoundException } from "../../shared/exceptions";
 import { apiResponse } from "../../shared/response";
 import { normalizeSearch, searchCacheSegment } from "../../utils/search";
-import { matchesEtag, revalidateHeaders } from "../../utils/http-cache";
+import { matchesEtag, publicCatalogHeaders } from "../../utils/http-cache";
 import type { ProductsService } from "./products.service";
 
 export class ProductsController {
@@ -12,7 +12,7 @@ export class ProductsController {
     const criteria = { query: normalizeSearch(request.query["q"]) };
     const version = await this.service.version();
     const etag = `"catalog-${version}-${searchCacheSegment(criteria)}"`;
-    response.set({ ...revalidateHeaders, etag });
+    response.set({ ...publicCatalogHeaders, etag });
     if (matchesEtag(request, etag)) {
       response.status(304).end();
       return;
@@ -27,7 +27,7 @@ export class ProductsController {
     const product = await this.service.findById(id, version);
     if (!product) throw new NotFoundException("Product not found");
     const etag = `"product-${id}-${version}"`;
-    response.set({ ...revalidateHeaders, etag });
+    response.set({ ...publicCatalogHeaders, etag });
     if (matchesEtag(request, etag)) {
       response.status(304).end();
       return;

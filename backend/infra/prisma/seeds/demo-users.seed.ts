@@ -25,7 +25,7 @@ export const demoUsers: readonly DemoUser[] = [
   },
 ];
 
-function readPasswords(): Map<string, string> {
+export function readDemoUserPasswordsFromEnvironment(): Map<string, string> {
   const passwords = new Map<string, string>();
   for (const user of demoUsers) {
     const password = process.env[user.passwordEnvironmentKey];
@@ -72,7 +72,7 @@ async function main(): Promise<void> {
   const pool = new Pool({ connectionString, max: 1, connectionTimeoutMillis: 10_000 });
   const client = new PrismaClient({ adapter: new PrismaPg(pool) });
   try {
-    await seedDemoUsers(client, readPasswords());
+    await seedDemoUsers(client, readDemoUserPasswordsFromEnvironment());
     console.log(`Demo user seed completed: ${demoUsers.length} users.`);
   } finally {
     await client.$disconnect();

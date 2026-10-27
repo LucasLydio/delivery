@@ -116,6 +116,11 @@
   background: var(--bg-light);
 }
 
+.header-action:disabled {
+  cursor: default;
+  opacity: .55;
+}
+
 .header-action svg {
   width: 1.35rem;
   height: 1.35rem;

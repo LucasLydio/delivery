@@ -5,6 +5,7 @@ import { apiErrorMessage } from '../../core/api-error';
 import { AppConfigService } from '../../core/app-config';
 import { AuthService } from '../../core/auth.service';
 import { formatBrazilianPhoneInput } from '../../core/phone';
+import { PushService } from '../../core/push.service';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly push = inject(PushService);
   readonly config = inject(AppConfigService);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
@@ -40,6 +42,7 @@ export class LoginComponent {
     this.submitting.set(true);
     try {
       await this.auth.login(this.form.getRawValue());
+      void this.push.initialize();
       await this.router.navigateByUrl(this.safeReturnUrl());
     } catch (error) {
       this.error.set(apiErrorMessage(error, 'Não foi possível entrar. Confira seus dados e tente novamente.'));

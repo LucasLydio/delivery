@@ -2,11 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-export interface LatestState {
-  state: unknown | null;
-  updatedAt: string | null;
-}
-
 export interface PushKeyConfig {
   enabled: boolean;
   publicKey: string | null;
@@ -15,10 +10,6 @@ export interface PushKeyConfig {
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-
-  latestState(): Promise<LatestState> {
-    return firstValueFrom(this.http.get<LatestState>('/api/state/latest'));
-  }
 
   pushKey(): Promise<PushKeyConfig> {
     return firstValueFrom(this.http.get<PushKeyConfig>('/api/config/push-key'));

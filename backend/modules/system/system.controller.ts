@@ -9,10 +9,6 @@ export class SystemController {
     apiResponse.get(response, this.service.health());
   };
 
-  latestState = async (_request: Request, response: Response): Promise<void> => {
-    apiResponse.get(response, await this.service.latestState());
-  };
-
   pushConfig = async (_request: Request, response: Response): Promise<void> => {
     apiResponse.get(response, this.service.pushConfig());
   };

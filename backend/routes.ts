@@ -33,7 +33,6 @@ import { PrismaPushRepository } from "./modules/push/push.repository";
 import { createPushRoutes } from "./modules/push/push.routes";
 import { PushService } from "./modules/push/push.service";
 import { SystemController } from "./modules/system/system.controller";
-import { PrismaSystemRepository } from "./modules/system/system.repository";
 import { createSystemRoutes } from "./modules/system/system.routes";
 import { SystemService } from "./modules/system/system.service";
 import { UsersController } from "./modules/users/users.controller";
@@ -57,7 +56,9 @@ export interface RouteDependencies {
 
 export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
   const config = getRuntimeConfig();
-  const addressesService = dependencies.addressesService ?? new AddressesService(new PrismaAddressesRepository());
+  const addressesService = dependencies.addressesService ?? new AddressesService(
+    new PrismaAddressesRepository(), config.MAX_ADDRESSES_PER_CUSTOMER,
+  );
   const cartsService = dependencies.cartsService ?? new CartsService(
     new PrismaCartsRepository(),
     config.CATALOG_CURRENCY,
@@ -85,10 +86,12 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
     config.CACHE_NAMESPACE,
   );
   const ordersService = dependencies.ordersService ?? createDefaultOrdersService();
-  const pushService = dependencies.pushService ?? new PushService(new PrismaPushRepository());
+  const pushService = dependencies.pushService ?? new PushService(
+    new PrismaPushRepository(), config.MAX_PUSH_SUBSCRIPTIONS_PER_CUSTOMER,
+  );
   const systemService = dependencies.systemService ?? new SystemService(
-    config.DATABASE_URL ? new PrismaSystemRepository() : null,
     config.VAPID_PUBLIC_KEY,
+    Boolean(config.VAPID_PUBLIC_KEY && config.VAPID_PRIVATE_KEY && config.VAPID_SUBJECT),
   );
   const usersService = dependencies.usersService ?? new UsersService(
     new PrismaUsersRepository(),
@@ -117,7 +120,7 @@ export function createApiRoutes(dependencies: RouteDependencies = {}): Router {
   router.use("/orders", createOrdersRoutes(ordersController));
   router.use("/webhooks", createOrdersWebhookRoutes(new MercadoPagoWebhookController(ordersService, config.MERCADO_PAGO_WEBHOOK_SECRET)));
   router.use("/products", createProductsRoutes(new ProductsController(productsService)));
-  router.use("/push", createPushRoutes(new PushController(pushService)));
+  router.use("/push", createPushRoutes(new PushController(pushService, customersService)));
   router.use("/admin", createUsersRoutes(new UsersController(
     usersService,
     config.ADMIN_AUTH_REFRESH_COOKIE_NAME,

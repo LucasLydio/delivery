@@ -14,11 +14,11 @@
 
     <div class="header-actions">
       <app-install-button [compact]="true" />
-      <button class="header-action" type="button" aria-label="Notificações">
+      <button class="header-action" type="button" aria-label="Ativar notificações" [disabled]="push.status() === 'loading' || push.status() === 'unavailable' || push.status() === 'denied'" (click)="push.enable()">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
         </svg>
-        <span class="notification-dot" aria-hidden="true"></span>
+        @if (push.status() === 'ready') { <span class="notification-dot" aria-hidden="true"></span> }
       </button>
       <a class="header-action" routerLink="/cart" aria-label="Abrir carrinho">
         <svg viewBox="0 0 24 24" aria-hidden="true">

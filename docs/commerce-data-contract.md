@@ -30,9 +30,10 @@ The TypeScript wire types are in [`shared/commerce-contract.ts`](../shared/comme
 | `POST /api/cart/quote` | Reprice the synchronized cart from current product and option records |
 | `POST /api/checkout/quote` | Authoritative quote using the current cart, location, payment method, and optional coupon |
 | `POST /api/checkout` | Idempotent order creation; requires `X-Idempotency-Key` |
-| `GET /api/orders`, `GET /api/orders/:id` | Authenticated order history and details |
+| `GET /api/orders?limit=:limit&cursor=:cursor` | Authenticated cursor-paginated order history with `items` and `nextCursor` |
+| `GET /api/orders/:id` | Authenticated order details |
 | `GET /api/orders/events?after=:cursor` | Catch up persisted order notifications |
-| `GET /api/order-events` | Authenticated SSE stream with `Last-Event-ID` replay |
+| `GET /api/orders/:orderId` | Authenticated order catch-up used only by the active tracking page |
 | `POST /api/webhooks/mercado-pago` | Signed Mercado Pago Order reconciliation |
 
 ## Cached cart preview

@@ -41,6 +41,9 @@ export interface UpdatePaymentInput {
   confirmedAt: Date | null;
 }
 
+export interface OrderCursor { createdAt: Date; id: string }
+export interface OrderPageRecord { items: OrderSummary[]; nextCursor: OrderCursor | null }
+
 export interface OrdersRepository {
   checkoutContext(customerId: string, addressId: string | undefined, couponCode: string | undefined, now: Date): Promise<CheckoutContext>;
   findByIdempotencyKey(customerId: string, key: string): Promise<OrderSummary | null>;
@@ -48,7 +51,7 @@ export interface OrdersRepository {
   create(input: CreateOrderInput): Promise<OrderSummary>;
   updatePayment(orderId: string, input: UpdatePaymentInput): Promise<OrderSummary>;
   get(customerId: string, orderId: string): Promise<OrderSummary | null>;
-  list(customerId: string): Promise<OrderSummary[]>;
+  list(customerId: string, limit: number, cursor: OrderCursor | null): Promise<OrderPageRecord>;
   events(customerId: string, after: bigint, limit: number): Promise<OrderNotification[]>;
   expiredPending(now: Date, limit: number): Promise<OrderSummary[]>;
   cancel(orderId: string, providerStatus: string): Promise<OrderSummary>;
@@ -219,8 +222,26 @@ export class PrismaOrdersRepository implements OrdersRepository {
     return row ? toSummary(row) : null;
   }
 
-  async list(customerId: string): Promise<OrderSummary[]> {
-    return (await this.prisma.order.findMany({ where: { customerId }, include: orderInclude, orderBy: [{ createdAt: "desc" }, { id: "desc" }] })).map(toSummary);
+  async list(customerId: string, limit: number, cursor: OrderCursor | null): Promise<OrderPageRecord> {
+    const rows = await this.prisma.order.findMany({
+      where: {
+        customerId,
+        ...(cursor ? { OR: [
+          { createdAt: { lt: cursor.createdAt } },
+          { createdAt: cursor.createdAt, id: { lt: cursor.id } },
+        ] } : {}),
+      },
+      include: orderInclude,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+    });
+    const hasMore = rows.length > limit;
+    if (hasMore) rows.pop();
+    const last = hasMore ? rows.at(-1) : undefined;
+    return {
+      items: rows.map(toSummary),
+      nextCursor: last ? { createdAt: last.createdAt, id: last.id } : null,
+    };
   }
 
   async events(customerId: string, after: bigint, limit: number): Promise<OrderNotification[]> {

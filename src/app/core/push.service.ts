@@ -91,6 +91,13 @@ export class PushService {
     }
   }
 
+  async detach(): Promise<void> {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (subscription) await this.api.unregisterPush(this.installId(), subscription.endpoint);
+    this.status.set('ready');
+  }
+
   private async register(subscription: PushSubscription): Promise<void> {
     const { endpoint, keys } = subscription.toJSON();
     if (!endpoint || !keys?.['p256dh'] || !keys?.['auth']) throw new Error('Incomplete push subscription');

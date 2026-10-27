@@ -4,6 +4,8 @@ import { LoginComponent } from './features/auth/login.component';
 import { CartComponent } from './features/cart/cart.component';
 import { HomeComponent } from './features/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found.component';
+import { OrderDetailComponent } from './features/orders/order-detail.component';
+import { OrdersComponent } from './features/orders/orders.component';
 import { PlaceholderComponent } from './features/placeholder/placeholder.component';
 import { ProductDetailComponent } from './features/product/product-detail.component';
 import { PersonalInfoComponent } from './features/profile/personal-info.component';
@@ -19,7 +21,8 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent, data: { showHeader: false, showNav: false } },
       { path: 'product/:id', component: ProductDetailComponent, data: { showHeader: false, showNav: false } },
       { path: 'offers', component: PlaceholderComponent, data: { title: 'Ofertas', image: '/images/offer-placeholder.webp', imageAlt: 'Ilustração de cupons com a mensagem: Sem ofertas' } },
-      { path: 'orders', component: PlaceholderComponent, canActivate: [authGuard], data: { title: 'Seus pedidos', image: '/images/order-placeholder.webp', imageAlt: 'Ilustração de um pedido com a mensagem: Faça um pedido!' } },
+      { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
+      { path: 'orders/:id', component: OrderDetailComponent, canActivate: [authGuard], data: { showHeader: false, showNav: false } },
       { path: 'cart', component: CartComponent, canActivate: [authGuard], data: { showHeader: false, showNav: false } },
       { path: 'profile/edit', component: PersonalInfoComponent, canActivate: [authGuard], data: { showHeader: false, showNav: false } },
       { path: 'profile', component: ProfileComponent, canActivate: [authGuard], data: { showHeader: false, showNav: true } },

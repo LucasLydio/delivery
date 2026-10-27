@@ -15,7 +15,7 @@ function setup() {
     STORAGE_PROVIDER: "local", PRODUCT_IMAGE_BASE_URL: "/images/products/", LOCAL_PRODUCT_IMAGE_DIRECTORY: "public/images/products",
   });
   const productsService = new ProductsService(repository, cache, "BRL", storage, "api-test");
-  const systemService = new SystemService(null, undefined);
+  const systemService = new SystemService(undefined);
   return { repository, api: request(createApp({ productsService, systemService })) };
 }
 
@@ -23,6 +23,8 @@ test("GET /api/products returns a catalog snapshot and supports conditional requ
   const { repository, api } = setup();
   const first = await api.get("/api/products").expect(200).expect("content-type", /json/);
   assert.equal(first.headers["etag"], '"catalog-1-all"');
+  assert.equal(first.headers["cache-control"], "public, max-age=300, stale-while-revalidate=3600");
+  assert.equal(first.headers["netlify-cdn-cache-control"], "public, durable, s-maxage=300, stale-while-revalidate=86400");
   assert.equal(first.body.products[0].basePriceMinor, 2590);
 
   await api.get("/api/products").set("if-none-match", '"catalog-1-all"').expect(304).expect("");
@@ -62,7 +64,7 @@ test("Express applies global health, not-found, CORS, request ID, and OPTIONS be
   const { api } = setup();
   const allowedOrigin = [...getAllowedOrigins()][0];
   assert.ok(allowedOrigin);
-  await api.get("/api/health").expect(200, { status: "ok" }).expect("x-request-id", /.+/);
+  await api.get("/api/health").expect(200, { status: "ok" }).expect("x-request-id", /.+/).expect("cache-control", "no-store");
   await api.get("/api/config/push-key").expect(200, { enabled: false, publicKey: null });
   await api.get("/api/unknown").expect(404, { error: "Not found" });
   await api.options("/api/products").set("origin", allowedOrigin).expect(204).expect("access-control-allow-origin", allowedOrigin);

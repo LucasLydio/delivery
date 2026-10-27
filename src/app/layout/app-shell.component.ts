@@ -7,7 +7,6 @@ import { AppConfigService } from '../core/app-config';
 import { CartService } from '../core/cart.service';
 import { AuthService } from '../core/auth.service';
 import { PushService } from '../core/push.service';
-import { RealtimeService } from '../core/realtime.service';
 
 @Component({
   selector: 'app-shell',
@@ -22,8 +21,7 @@ export class AppShellComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly showHeader = signal(true);
   readonly showNav = signal(true);
-  private readonly realtime = inject(RealtimeService);
-  private readonly push = inject(PushService);
+  readonly push = inject(PushService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -34,8 +32,7 @@ export class AppShellComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.config.load();
-    this.realtime.start();
-    void this.push.initialize();
+    if (this.auth.authenticated()) void this.push.initialize();
     this.updateChrome();
   }
 

@@ -1,12 +1,13 @@
 import { Prisma } from "@prisma/client";
-import type { CheckoutQuote, OrderNotification, OrderSummary } from "../../../shared/commerce-contract";
+import type { CheckoutQuote, OrderNotification, OrderPage, OrderSummary } from "../../../shared/commerce-contract";
 import type { CheckoutLock } from "../../infra/redis/checkout-lock";
 import { BadRequestException, ConflictException, NotFoundException, TooManyRequestsException } from "../../shared/exceptions";
 import { priceCart } from "../carts/carts.service";
 import type { MercadoPagoGateway } from "./orders.mercado-pago";
 import { calculateCheckout, type Coordinates, type DeliveryPricing } from "./orders.pricing";
-import type { OrdersRepository } from "./orders.repository";
+import type { OrderCursor, OrdersRepository } from "./orders.repository";
 import type { CheckoutQuoteRequest, CheckoutRequest } from "./orders.schema";
+import { noOpOrderNotifier, type OrderNotifier } from "../push/push.sender";
 
 export interface OrdersConfiguration {
   currency: string;
@@ -19,6 +20,23 @@ export interface OrdersConfiguration {
 }
 
 export interface CheckoutResult { order: OrderSummary; replayed: boolean }
+
+function encodeCursor(cursor: OrderCursor): string {
+  return Buffer.from(JSON.stringify({ createdAt: cursor.createdAt.toISOString(), id: cursor.id }), "utf8").toString("base64url");
+}
+
+function decodeCursor(value: string | undefined): OrderCursor | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Record<string, unknown>;
+    const createdAt = typeof parsed["createdAt"] === "string" ? new Date(parsed["createdAt"]) : new Date(Number.NaN);
+    const id = parsed["id"];
+    if (!Number.isFinite(createdAt.getTime()) || typeof id !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) throw new Error();
+    return { createdAt, id };
+  } catch {
+    throw new BadRequestException("Invalid order cursor");
+  }
+}
 
 function locationFrom(value: unknown): Coordinates | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -44,6 +62,7 @@ export class OrdersService {
     private readonly mercadoPago: MercadoPagoGateway,
     private readonly config: OrdersConfiguration,
     private readonly now: () => Date = () => new Date(),
+    private readonly notifier: OrderNotifier = noOpOrderNotifier,
   ) {}
 
   async quote(customerId: string, input: CheckoutQuoteRequest): Promise<CheckoutQuote> {
@@ -97,6 +116,7 @@ export class OrdersService {
       }
 
       if (input.payment.method !== "MERCADO_PAGO_PIX" && input.payment.method !== "MERCADO_PAGO_CARD") {
+        await this.notify(order);
         return { order, replayed: false };
       }
       const provider = await this.mercadoPago.create(order.id, order.totalMinor, order.currency, input.payment, idempotencyKey);
@@ -108,6 +128,7 @@ export class OrdersService {
         paymentData: provider.paymentData,
         confirmedAt: provider.outcome === "paid" ? this.now() : null,
       });
+      await this.notify(order);
       return { order, replayed: false };
     } finally {
       await release();
@@ -120,7 +141,10 @@ export class OrdersService {
     return order;
   }
 
-  list(customerId: string): Promise<OrderSummary[]> { return this.repository.list(customerId); }
+  async list(customerId: string, input: { limit: number; cursor?: string }): Promise<OrderPage> {
+    const page = await this.repository.list(customerId, input.limit, decodeCursor(input.cursor));
+    return { items: page.items, nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null };
+  }
   events(customerId: string, after: bigint, limit = 100): Promise<OrderNotification[]> {
     return this.repository.events(customerId, after, Math.min(100, Math.max(1, limit)));
   }
@@ -130,9 +154,11 @@ export class OrdersService {
     if (!current || current.status === "CONFIRMED" || current.status === "CANCELLED") return current;
     const provider = await this.mercadoPago.get(providerOrderId);
     if (provider.outcome === "failed" && ["canceled", "cancelled"].includes(provider.status)) {
-      return this.repository.cancel(current.id, provider.status);
+      const cancelled = await this.repository.cancel(current.id, provider.status);
+      await this.notify(cancelled);
+      return cancelled;
     }
-    return this.repository.updatePayment(current.id, {
+    const updated = await this.repository.updatePayment(current.id, {
       status: provider.outcome === "paid" ? "CONFIRMED" : provider.outcome === "failed" ? "PAYMENT_FAILED" : "PAYMENT_PENDING",
       paymentStatus: provider.outcome === "paid" ? "PAID" : provider.outcome === "failed" ? "FAILED" : "PENDING",
       mercadoPagoOrderId: provider.providerOrderId,
@@ -140,6 +166,8 @@ export class OrdersService {
       paymentData: provider.paymentData,
       confirmedAt: provider.outcome === "paid" ? this.now() : null,
     });
+    if (updated.status !== current.status || updated.paymentStatus !== current.paymentStatus) await this.notify(updated);
+    return updated;
   }
 
   async cancelExpired(limit = 100): Promise<number> {
@@ -153,10 +181,22 @@ export class OrdersService {
         continue;
       }
       await this.mercadoPago.cancel(order.mercadoPagoOrderId, `cancel-${order.id}`);
-      await this.repository.cancel(order.id, "canceled");
+      const cancelledOrder = await this.repository.cancel(order.id, "canceled");
+      await this.notify(cancelledOrder);
       cancelled++;
     }
     return cancelled;
+  }
+
+  private async notify(order: OrderSummary): Promise<void> {
+    try {
+      await this.notifier.notify(order);
+    } catch (error) {
+      console.error("Order notification failed", {
+        orderId: order.id,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
   }
 
   private async prepare(customerId: string, input: CheckoutQuoteRequest): Promise<{

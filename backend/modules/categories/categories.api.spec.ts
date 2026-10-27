@@ -15,6 +15,8 @@ function setup() {
 test("GET /api/categories returns ordered category metadata and supports ETags", async () => {
   const { repository, api } = setup();
   const response = await api.get("/api/categories").expect(200).expect("etag", '"categories-1"');
+  assert.equal(response.headers["cache-control"], "public, max-age=300, stale-while-revalidate=3600");
+  assert.equal(response.headers["netlify-cdn-cache-control"], "public, durable, s-maxage=300, stale-while-revalidate=86400");
   assert.equal(response.body.version, "1");
   assert.equal(response.body.fetchedAt, "2026-10-12T15:00:00.000Z");
   assert.deepEqual(response.body.categories.map((category: { slug: string }) => category.slug), ["pratos", "bebidas"]);

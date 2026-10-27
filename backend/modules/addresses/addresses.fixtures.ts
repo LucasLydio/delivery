@@ -1,4 +1,4 @@
-import type { AddressPatch, AddressRecord, AddressesRepository, AddressWrite } from "./addresses.repository";
+import { AddressLimitError, type AddressPatch, type AddressRecord, type AddressesRepository, type AddressWrite } from "./addresses.repository";
 
 export class MemoryAddressesRepository implements AddressesRepository {
   readonly rows: AddressRecord[] = [];
@@ -10,8 +10,9 @@ export class MemoryAddressesRepository implements AddressesRepository {
       .sort((left, right) => Number(right.isDefault) - Number(left.isDefault) || left.createdAt.getTime() - right.createdAt.getTime());
   }
 
-  async create(customerId: string, input: AddressWrite, makeDefault: boolean): Promise<AddressRecord> {
+  async create(customerId: string, input: AddressWrite, makeDefault: boolean, maximum = 10): Promise<AddressRecord> {
     const customerRows = this.rows.filter((row) => row.customerId === customerId);
+    if (customerRows.length >= maximum) throw new AddressLimitError();
     const isDefault = makeDefault || customerRows.length === 0;
     if (isDefault) customerRows.forEach((row) => { row.isDefault = false; });
     const now = new Date(Date.UTC(2026, 9, 12, 12, this.sequence));

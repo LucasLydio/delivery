@@ -1,7 +1,7 @@
 import type { Address } from "../../../shared/commerce-contract";
-import { NotFoundException } from "../../shared/exceptions";
+import { ConflictException, NotFoundException } from "../../shared/exceptions";
 import { formatBrazilianPostalCode, normalizeBrazilianPostalCode, normalizeBrazilianRegion } from "../../utils/address";
-import type { AddressPatch, AddressRecord, AddressesRepository, AddressWrite } from "./addresses.repository";
+import { AddressLimitError, type AddressPatch, type AddressRecord, type AddressesRepository, type AddressWrite } from "./addresses.repository";
 import type { CreateAddressInput, UpdateAddressInput } from "./addresses.schema";
 
 function optionalText(value: string | null | undefined): string | null | undefined {
@@ -28,7 +28,7 @@ function toAddress(row: AddressRecord): Address {
 }
 
 export class AddressesService {
-  constructor(private readonly repository: AddressesRepository) {}
+  constructor(private readonly repository: AddressesRepository, private readonly maximumAddresses = 10) {}
 
   async list(customerId: string): Promise<Address[]> {
     return (await this.repository.list(customerId)).map(toAddress);
@@ -46,7 +46,12 @@ export class AddressesService {
       deliveryInstructions: optionalText(input.deliveryInstructions),
       locationPin: input.locationPin,
     };
-    return toAddress(await this.repository.create(customerId, write, input.isDefault ?? false));
+    try {
+      return toAddress(await this.repository.create(customerId, write, input.isDefault ?? false, this.maximumAddresses));
+    } catch (error) {
+      if (error instanceof AddressLimitError) throw new ConflictException("Address limit reached");
+      throw error;
+    }
   }
 
   async update(customerId: string, addressId: string, input: UpdateAddressInput): Promise<Address> {

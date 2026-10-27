@@ -32,10 +32,11 @@ export interface AddressWrite {
 }
 
 export type AddressPatch = Partial<AddressWrite>;
+export class AddressLimitError extends Error {}
 
 export interface AddressesRepository {
   list(customerId: string): Promise<AddressRecord[]>;
-  create(customerId: string, input: AddressWrite, makeDefault: boolean): Promise<AddressRecord>;
+  create(customerId: string, input: AddressWrite, makeDefault: boolean, maximum: number): Promise<AddressRecord>;
   update(customerId: string, addressId: string, input: AddressPatch): Promise<AddressRecord | null>;
   setDefault(customerId: string, addressId: string): Promise<AddressRecord | null>;
   delete(customerId: string, addressId: string): Promise<boolean>;
@@ -75,10 +76,12 @@ export class PrismaAddressesRepository implements AddressesRepository {
     return rows.map(toRecord);
   }
 
-  create(customerId: string, input: AddressWrite, makeDefault: boolean): Promise<AddressRecord> {
+  create(customerId: string, input: AddressWrite, makeDefault: boolean, maximum = 10): Promise<AddressRecord> {
     return this.prisma.$transaction(async (transaction) => {
       await this.lockCustomer(transaction, customerId);
-      const firstAddress = await transaction.address.count({ where: { customerId } }) === 0;
+      const addressCount = await transaction.address.count({ where: { customerId } });
+      if (addressCount >= maximum) throw new AddressLimitError();
+      const firstAddress = addressCount === 0;
       const isDefault = makeDefault || firstAddress;
       if (isDefault) await transaction.address.updateMany({ where: { customerId, isDefault: true }, data: { isDefault: false } });
       const row = await transaction.address.create({

@@ -197,6 +197,11 @@ export interface OrderSummary extends CheckoutQuote {
   cancelledAt: string | null;
 }
 
+export interface OrderPage {
+  items: OrderSummary[];
+  nextCursor: string | null;
+}
+
 export interface OrderNotification {
   id: string;
   orderId: string;

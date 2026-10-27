@@ -8,7 +8,7 @@ import { CustomerTokenService } from "../customers/customers.tokens";
 import { MemoryAddressesRepository } from "./addresses.fixtures";
 import { AddressesService } from "./addresses.service";
 
-function setup() {
+function setup(maximumAddresses = 10) {
   const customersService = new CustomersService(
     new MemoryCustomersRepository(),
     new CustomerTokenService("addresses-test-secret-with-more-than-32-characters", "test-api", "test-pwa", 900),
@@ -17,7 +17,7 @@ function setup() {
   const addressesRepository = new MemoryAddressesRepository();
   const api = request(createApp({
     customersService,
-    addressesService: new AddressesService(addressesRepository),
+    addressesService: new AddressesService(addressesRepository, maximumAddresses),
   }));
   return { api, addressesRepository };
 }
@@ -56,6 +56,14 @@ test("address routes require authentication and persist a validated location pin
     .set("authorization", `Bearer ${token}`)
     .send({ ...home, locationPin: { latitude: -91, longitude: -46 } })
     .expect(400);
+});
+
+test("address creation is bounded per customer", async () => {
+  const { api } = setup(1);
+  const token = await login(api, "Limite Teste", "(11) 9 7777-8888");
+  await api.post("/api/me/addresses").set("authorization", `Bearer ${token}`).send(home).expect(201);
+  await api.post("/api/me/addresses").set("authorization", `Bearer ${token}`)
+    .send({ ...home, label: "Trabalho" }).expect(409, { error: "Address limit reached" });
 });
 
 test("default changes, deletion promotion, and customer ownership are enforced", async () => {

@@ -4,9 +4,16 @@ import { HttpMercadoPagoGateway } from "./orders.mercado-pago";
 import { parseMoneyToMinor } from "./orders.pricing";
 import { PrismaOrdersRepository } from "./orders.repository";
 import { OrdersService } from "./orders.service";
+import { PrismaPushRepository } from "../push/push.repository";
+import { WebPushOrderNotifier } from "../push/push.sender";
 
 export function createDefaultOrdersService(): OrdersService {
   const config = getRuntimeConfig();
+  const notifier = new WebPushOrderNotifier(new PrismaPushRepository(), {
+    publicKey: config.VAPID_PUBLIC_KEY,
+    privateKey: config.VAPID_PRIVATE_KEY,
+    subject: config.VAPID_SUBJECT,
+  });
   return new OrdersService(
     new PrismaOrdersRepository(), getCheckoutLock(),
     new HttpMercadoPagoGateway(config.MERCADO_PAGO_ACCESS_TOKEN, config.MERCADO_PAGO_API_URL),
@@ -20,6 +27,8 @@ export function createDefaultOrdersService(): OrdersService {
       lockTtlMs: config.CHECKOUT_LOCK_TTL_MS,
       unpaidTimeoutMinutes: config.UNPAID_ORDER_TIMEOUT_MINUTES,
     },
+    undefined,
+    notifier,
   );
 }
 

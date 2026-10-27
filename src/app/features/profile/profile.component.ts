@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../core/api-error';
 import { AuthService } from '../../core/auth.service';
 import { CartService } from '../../core/cart.service';
+import { PushService } from '../../core/push.service';
 
 @Component({
   selector: 'app-profile',
@@ -15,6 +16,7 @@ export class ProfileComponent {
   readonly auth = inject(AuthService);
   private readonly cart = inject(CartService);
   private readonly router = inject(Router);
+  private readonly push = inject(PushService);
   readonly loggingOut = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -26,6 +28,7 @@ export class ProfileComponent {
     this.error.set(null);
     this.loggingOut.set(true);
     try {
+      await this.push.detach().catch(() => undefined);
       await this.auth.logout();
       this.cart.clear();
       await this.router.navigate(['/login']);

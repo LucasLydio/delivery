@@ -9,5 +9,21 @@
         "files": ["/index.html", "/favicon.ico", "/manifest.webmanifest", "/icons/*.png", "/*.css", "/*.js"]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "public-catalog",
+      "urls": [
+        "/api/products",
+        "/api/products/**",
+        "/api/categories",
+        "/api/categories/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 100,
+        "maxAge": "15m"
+      }
+    }
   ]
 }

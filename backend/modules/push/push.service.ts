@@ -2,13 +2,13 @@ import type { PushRepository } from "./push.repository";
 import type { PushDeletion, PushRegistration } from "./push.schema";
 
 export class PushService {
-  constructor(private readonly repository: PushRepository) {}
+  constructor(private readonly repository: PushRepository, private readonly maximumSubscriptions = 5) {}
 
-  async register(input: PushRegistration): Promise<void> {
-    await this.repository.upsert(input);
+  async register(customerId: string, input: PushRegistration): Promise<void> {
+    await this.repository.upsert(customerId, input, this.maximumSubscriptions);
   }
 
-  unregister(input: PushDeletion): Promise<boolean> {
-    return this.repository.delete(input);
+  unregister(customerId: string, input: PushDeletion): Promise<boolean> {
+    return this.repository.delete(customerId, input);
   }
 }

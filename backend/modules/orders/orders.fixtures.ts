@@ -2,7 +2,7 @@ import type { CheckoutLock, ReleaseCheckoutLock } from "../../infra/redis/checko
 import type { CheckoutQuote, OrderNotification, OrderSummary } from "../../../shared/commerce-contract";
 import type { MercadoPagoGateway, MercadoPagoResult } from "./orders.mercado-pago";
 import type { CheckoutPayment } from "./orders.schema";
-import type { CheckoutContext, CreateOrderInput, OrdersRepository, UpdatePaymentInput } from "./orders.repository";
+import type { CheckoutContext, CreateOrderInput, OrderCursor, OrderPageRecord, OrdersRepository, UpdatePaymentInput } from "./orders.repository";
 
 export class MemoryCheckoutLock implements CheckoutLock {
   locked = false;
@@ -103,7 +103,17 @@ export class MemoryOrdersRepository implements OrdersRepository {
   async findByMercadoPagoId(providerOrderId: string): Promise<OrderSummary | null> {
     return [...this.orders.values()].find((order) => order.mercadoPagoOrderId === providerOrderId) ?? null;
   }
-  async list(): Promise<OrderSummary[]> { return [...this.orders.values()].map(clone); }
+  async list(_customerId: string, limit: number, cursor: OrderCursor | null): Promise<OrderPageRecord> {
+    const ordered = [...this.orders.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.id.localeCompare(left.id));
+    const start = cursor
+      ? ordered.findIndex((order) => order.createdAt < cursor.createdAt.toISOString() || (order.createdAt === cursor.createdAt.toISOString() && order.id < cursor.id))
+      : 0;
+    const rows = start < 0 ? [] : ordered.slice(start, start + limit + 1);
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit).map(clone);
+    const last = hasMore ? items.at(-1) : undefined;
+    return { items, nextCursor: last ? { createdAt: new Date(last.createdAt), id: last.id } : null };
+  }
   async events(_customerId: string, _after: bigint, _limit: number): Promise<OrderNotification[]> { return []; }
   async expiredPending(): Promise<OrderSummary[]> { return [...this.orders.values()].filter((order) => order.status === "PAYMENT_PENDING"); }
   async cancel(orderId: string, providerStatus: string): Promise<OrderSummary> {
